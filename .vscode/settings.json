@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.gd": "gdscript",
+    "*.razor": "aspnetcorerazor",
+    ".lintstagedrc": "json",
+    "iomanip": "cpp"
+  }
+}

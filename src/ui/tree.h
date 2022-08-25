@@ -6,7 +6,6 @@ class node;
 class Tree {
   private:
     std::vector<std::shared_ptr<node>> _nodes;
-    std::shared_ptr<node> _root;
 
   public:
     Tree(/* args */);

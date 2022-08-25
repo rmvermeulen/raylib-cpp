@@ -3,6 +3,8 @@
 #include <raylib-cpp.hpp>
 #include <sstream>
 
+#include "ui/tree.h"
+
 class LogLine {
   public:
     const std::chrono::system_clock::time_point date;

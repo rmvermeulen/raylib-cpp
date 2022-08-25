@@ -4,8 +4,11 @@
 #include <sstream>
 
 #include "framework.h"
+#include "tests.h"
 
-int main() {
+#define RUN_TESTS
+
+void run_game() {
 
     // Initialization
     int screenWidth = 800;
@@ -38,6 +41,17 @@ int main() {
         console.Render();
         EndDrawing();
     }
+}
 
+int main() {
+
+#ifdef RUN_TESTS
+    printf("main: running tests...\n");
+    tests::run_all();
+    printf("main: tests done!\n");
+#else
+    printf("main: starting game!\n");
+    run_game();
+#endif
     return 0;
 }

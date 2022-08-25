@@ -3,6 +3,17 @@
     "*.gd": "gdscript",
     "*.razor": "aspnetcorerazor",
     ".lintstagedrc": "json",
-    "iomanip": "cpp"
+    "iomanip": "cpp",
+    "*.tcc": "cpp",
+    "numeric": "cpp",
+    "fstream": "cpp",
+    "iostream": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp",
+    "system_error": "cpp",
+    "typeindex": "cpp",
+    "typeinfo": "cpp",
+    "variant": "cpp",
+    "optional": "cpp"
   }
 }

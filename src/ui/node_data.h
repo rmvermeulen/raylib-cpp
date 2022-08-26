@@ -12,7 +12,7 @@ struct NodeData {
     NodeData(NodeType, std::vector<NodeData>);
     ~NodeData();
 
-    size_t get_child_count() const;
+    size_t get_total_count() const;
 };
 
 } // namespace ui

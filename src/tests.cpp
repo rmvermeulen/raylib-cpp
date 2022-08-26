@@ -71,6 +71,39 @@ void describe(const char* topic, const setup_fn& setup) {
 }
 
 void run_all() {
+    describe("NodeData", [](const it_fn& it) {
+        it("counts total nodes", [] {
+            {
+                ui::NodeData data{ui::NodeType::Row};
+                expect(data.get_total_count() == 1, "must be 1 total");
+            }
+            {
+                ui::NodeData data{ui::NodeType::Row,
+                                  {ui::NodeData{ui::NodeType::Row}}};
+
+                expect(data.get_total_count() == 2, "must be 2 total");
+            }
+            {
+                ui::NodeData data{ui::NodeType::Row,
+                                  {ui::NodeData{ui::NodeType::Row},
+                                   ui::NodeData{ui::NodeType::Row}}};
+
+                expect(data.get_total_count() == 3, "must be 3 total");
+            }
+            {
+                ui::NodeData data{
+                    ui::NodeType::Row,
+                    {ui::NodeData{ui::NodeType::Column,
+                                  {ui::NodeData{ui::NodeType::Row},
+                                   ui::NodeData{ui::NodeType::Row}}},
+                     ui::NodeData{ui::NodeType::Column,
+                                  {ui::NodeData{ui::NodeType::Row},
+                                   ui::NodeData{ui::NodeType::Row}}}}};
+
+                expect(data.get_total_count() == 7, "must be 7 total");
+            }
+        });
+    });
     describe("tree", [](const it_fn& it) {
         it("creates nodes", [] {
             ui::Tree tree{};
@@ -96,10 +129,10 @@ void run_all() {
         it("has a direct api", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            auto& child = tree.create_child_for(root);
+            auto& child = tree.create_child_for(root, ui::NodeType::Row);
             expect(root.get_child_count() == 1, "root must have 1 child");
             expect(tree.get_node_count() == 2, "tree must have 2 children");
-            tree.create_child_for(child);
+            tree.create_child_for(child, ui::NodeType::Row);
             expect(root.get_child_count() == 1, "root must still have 1 child");
             expect(child.get_child_count() == 1, "child must have 1 child");
             expect(tree.get_node_count() == 3, "tree now has 3 children");
@@ -107,15 +140,16 @@ void run_all() {
         it("sets the parent on new nodes", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            auto& child = tree.create_child_for(root);
+            auto& child = tree.create_child_for(root, ui::NodeType::Row);
             expect(child.get_parent().lock().get() == &root,
                    "child must have root as parent");
         });
         it("can get the parents from a child", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            auto& first = tree.create_child_for(root);
-            const auto& second = tree.create_child_for(first);
+            auto& first = tree.create_child_for(root, ui::NodeType::Row);
+            const auto& second =
+                tree.create_child_for(first, ui::NodeType::Row);
 
             const auto& parents = tree.get_parents_of(second);
             expect(parents.size() > 0, "parents must not be empty");
@@ -125,8 +159,8 @@ void run_all() {
         it("can get the children from a parent", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            const auto& first = tree.create_child_for(root);
-            const auto& second = tree.create_child_for(root);
+            const auto& first = tree.create_child_for(root, ui::NodeType::Row);
+            const auto& second = tree.create_child_for(root, ui::NodeType::Row);
 
             auto children = tree.get_children_of(root);
             expect(children[0].get() == &first, "[0] must be the first child");
@@ -151,7 +185,10 @@ void run_all() {
 
                 }};
             ui::Tree tree{data};
-            expect(tree.get_node_count() == 7, "All nodes are built");
+            printf("created = %d, expected = %d\n", tree.get_node_count(),
+                   data.get_total_count());
+            expect(tree.get_node_count() == 1 + data.get_total_count(),
+                   "All nodes + root-node are created");
         });
     });
 }

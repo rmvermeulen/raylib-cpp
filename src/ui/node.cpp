@@ -11,7 +11,9 @@ Node::~Node() {}
 
 size_t Node::get_child_count() const { return _child_count; }
 
-Node& Node::create_child() { return _tree.create_child_for(*this); }
+Node& Node::create_child() {
+    return _tree.create_child_for(*this, ui::NodeType::Row);
+}
 
 const std::weak_ptr<Node>& Node::get_parent() const { return _parent; }
 

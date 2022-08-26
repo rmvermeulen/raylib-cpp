@@ -6,28 +6,25 @@
 
 namespace ui {
 Tree::Tree() { _nodes.push_back(std::make_shared<Node>(*this)); }
-Tree::Tree(NodeData root_data) {
-    NodeData& current_data = root_data;
-    const auto& root = std::make_shared<Node>(*this);
-    std::shared_ptr current_node = root;
-
-    root->set_type(root_data.type);
-    _nodes.push_back(root);
-    // todo: build from nodes
-}
+Tree::Tree(NodeData a_data) { _init(a_data); }
 
 Tree::~Tree() {}
 
-Node& Tree::create_child_for(Node& parent) {
+Node& Tree::create_child_for(Node& a_parent, const NodeType& a_type) {
+    return *_create_child_for(a_parent, a_type);
+}
+
+std::shared_ptr<Node> Tree::_create_child_for(Node& a_parent,
+                                              const NodeType& type) {
     auto pNode = std::make_shared<Node>(*this);
 
-    ++parent._child_count;
+    ++a_parent._child_count;
     pNode->_parent = *std::find_if(
         _nodes.begin(), _nodes.end(),
-        [&](std::shared_ptr<Node> node) { return node.get() == &parent; });
+        [&](std::shared_ptr<Node> node) { return node.get() == &a_parent; });
 
     _nodes.push_back(pNode);
-    return *pNode;
+    return pNode;
 }
 Node& Tree::get_root() const { return *_nodes[0]; }
 
@@ -40,11 +37,37 @@ size_t Tree::get_node_index(const Node& node) const {
     return -1;
 }
 
+void Tree::_init(NodeData a_data) {
+    printf("init: preparing for %d nodes\n", a_data.get_total_count());
+    auto root = std::make_shared<Node>(*this);
+    _nodes.push_back(root);
+    auto total = _apply(*root, a_data, 0);
+    printf("init: done. %d/%d nodes created\n", _nodes.size(), total);
+}
+
+size_t Tree::_apply(Node& a_target, NodeData a_data, size_t a_depth) {
+    printf("apply[%d] with %d children\n", a_depth, a_data.children.size());
+    a_target.set_type(a_data.type);
+    std::vector<std::pair<std::shared_ptr<Node>, NodeData>> created_nodes;
+    created_nodes.reserve(a_data.children.size());
+
+    for (const auto& child_data : a_data.children) {
+        const auto& node = _create_child_for(a_target, child_data.type);
+        _nodes.push_back(node);
+        created_nodes.push_back(std::pair(node, child_data));
+    }
+    size_t total = 1;
+    for (auto& pair : created_nodes)
+        total += _apply(*pair.first, pair.second, a_depth + 1);
+    printf("apply[%d] created: %d\n", a_depth, total);
+    return total;
+}
+
 std::vector<std::shared_ptr<Node>>
-Tree::get_children_of(const Node& parent) const {
-    if (parent._parent.expired()) {
+Tree::get_children_of(const Node& a_parent) const {
+    if (a_parent._parent.expired()) {
         // parent is root_node
-        auto cc = parent.get_child_count();
+        auto cc = a_parent.get_child_count();
         std::vector<std::shared_ptr<Node>> children;
         children.reserve(cc);
 
@@ -52,12 +75,12 @@ Tree::get_children_of(const Node& parent) const {
                   children.begin());
         return children;
     } else {
-        auto p = parent._parent.lock();
+        auto p = a_parent._parent.lock();
         auto start = get_node_index(*p);
-        auto end = start + parent.get_child_count();
+        auto end = start + a_parent.get_child_count();
 
         std::vector<std::shared_ptr<Node>> children;
-        children.reserve(parent.get_child_count());
+        children.reserve(a_parent.get_child_count());
 
         std::copy(_nodes.begin() + start, _nodes.begin() + end,
                   children.begin());
@@ -66,9 +89,9 @@ Tree::get_children_of(const Node& parent) const {
 }
 
 std::vector<std::shared_ptr<Node>>
-Tree::get_parents_of(const Node& parent) const {
+Tree::get_parents_of(const Node& a_parent) const {
     std::vector<std::shared_ptr<Node>> parents{};
-    auto p = &parent;
+    auto p = &a_parent;
     while (p != nullptr) {
         bool is_expired = p->_parent.expired();
         if (is_expired)

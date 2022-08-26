@@ -9,10 +9,10 @@ NodeData::NodeData(NodeType a_type, std::vector<NodeData> a_children)
 
 NodeData::~NodeData() {}
 
-size_t NodeData::get_child_count() const {
-    size_t count = children.size();
+size_t NodeData::get_total_count() const {
+    size_t count = 1;
     for (const auto& child : children)
-        count += child.get_child_count();
+        count += child.get_total_count();
     return count;
 }
 } // namespace ui

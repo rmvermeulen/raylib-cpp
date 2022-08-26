@@ -9,10 +9,13 @@ class Node;
 class Tree {
   private:
     std::vector<std::shared_ptr<Node>> _nodes;
+    void _init(NodeData);
+    size_t _apply(Node&, NodeData, size_t);
+    std::shared_ptr<Node> _create_child_for(Node& parent, const NodeType& type);
 
   public:
     Tree(/* args */);
-    Tree(NodeData nodes);
+    Tree(NodeData);
     ~Tree();
 
     // main stuff
@@ -21,7 +24,7 @@ class Tree {
 
     // parent stuff
     size_t get_node_index(const Node& node) const;
-    Node& create_child_for(Node& parent);
+    Node& create_child_for(Node& parent, const NodeType& type);
 
     std::vector<std::shared_ptr<Node>>
     get_children_of(const Node& parent) const;

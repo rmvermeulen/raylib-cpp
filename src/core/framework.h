@@ -1,3 +1,4 @@
+#pragma once
 #include <chrono>
 #include <iomanip>
 #include <raylib-cpp.hpp>
@@ -7,12 +8,10 @@
 
 #include "console.h"
 
-namespace core
-{
+namespace core {
 
-  class Framework
-  {
+class Framework {
   public:
     Console console;
-  };
+};
 } // namespace core

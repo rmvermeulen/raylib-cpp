@@ -1,24 +1,20 @@
 #pragma once
-#include "tree.h"
 #include <memory>
 #include <vector>
-namespace ui
-{
-  class node
-  {
+namespace ui {
+class Tree;
+class node {
   private:
     friend class Tree;
-    Tree &_tree;
-    node *_parent;
-    std::vector<node *> _children;
-    void init();
-    void add_child(node &);
+    Tree& _tree;
+    std::weak_ptr<node> _parent;
+    size_t _child_count = 0;
 
   public:
-    node(Tree &a_tree);
+    node(Tree& a_tree);
     ~node();
     size_t get_child_count() const;
-    node &create_child();
-  };
+    node& create_child();
+};
 
 } // namespace ui

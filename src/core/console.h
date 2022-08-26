@@ -1,3 +1,4 @@
+#pragma once
 #include "log_line.h"
 #include <algorithm>
 #include <sstream>

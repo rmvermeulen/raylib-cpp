@@ -1,5 +1,5 @@
 #define RAYGUI_IMPLEMENTATION
-// #define RUN_TESTS
+#define RUN_TESTS
 
 #include <chrono>
 #include <iomanip>

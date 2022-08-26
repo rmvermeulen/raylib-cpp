@@ -1,4 +1,3 @@
-#include "ui/node.h"
 #include <cstdio>
 #include <functional>
 #include <map>
@@ -8,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "ui/node.h"
+#include "ui/tree.h"
 namespace tests {
 class test {
   public:
@@ -94,13 +95,33 @@ void run_all() {
         it("has a direct api", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            auto& child = tree.create_child(root);
+            auto& child = tree.create_child_for(root);
             expect(root.get_child_count() == 1, "root must have 1 child");
             expect(tree.get_node_count() == 2, "tree must have 2 children");
-            tree.create_child(child);
+            tree.create_child_for(child);
             expect(root.get_child_count() == 1, "root must still have 1 child");
             expect(child.get_child_count() == 1, "child must have 1 child");
             expect(tree.get_node_count() == 3, "tree now has 3 children");
+        });
+        // it("has can get the parents from a child", [] {
+        //     ui::Tree tree{};
+        //     auto& root = tree.get_root();
+        //     auto& first = tree.create_child_for(root);
+        //     auto& second = tree.create_child_for(first);
+
+        //     const auto& parents = tree.get_parents_of(second);
+        //     expect(parents[0].get() == &first);
+        //     expect(parents[1].get() == &root);
+        // });
+        it("has can get the children from a parent", [] {
+            ui::Tree tree{};
+            auto& root = tree.get_root();
+            auto& first = tree.create_child_for(root);
+            auto& second = tree.create_child_for(root);
+
+            auto children = tree.get_children_of(root);
+            expect(children[0].get() == &first);
+            expect(children[1].get() == &second);
         });
     });
 }

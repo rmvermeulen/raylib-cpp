@@ -84,7 +84,7 @@ void run_all() {
         it("creates nested nodes", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            auto child = root.create_child();
+            auto& child = root.create_child();
             expect(root.get_child_count() == 1, "root must have 1 child");
             expect(tree.get_node_count() == 2, "tree must have 2 children");
             child.create_child();
@@ -103,25 +103,26 @@ void run_all() {
             expect(child.get_child_count() == 1, "child must have 1 child");
             expect(tree.get_node_count() == 3, "tree now has 3 children");
         });
-        // it("has can get the parents from a child", [] {
+        // it("can get the parents from a child", [] {
         //     ui::Tree tree{};
-        //     auto& root = tree.get_root();
-        //     auto& first = tree.create_child_for(root);
-        //     auto& second = tree.create_child_for(first);
+        //     auto root = tree.get_root();
+        //     auto first = tree.create_child_for(root);
+        //     auto second = tree.create_child_for(first);
 
         //     const auto& parents = tree.get_parents_of(second);
         //     expect(parents[0].get() == &first);
         //     expect(parents[1].get() == &root);
         // });
-        it("has can get the children from a parent", [] {
+        it("can get the children from a parent", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
-            auto& first = tree.create_child_for(root);
-            auto& second = tree.create_child_for(root);
+            const auto& first = tree.create_child_for(root);
+            const auto& second = tree.create_child_for(root);
 
             auto children = tree.get_children_of(root);
-            expect(children[0].get() == &first);
-            expect(children[1].get() == &second);
+            expect(children[0].get() == &first, "[0] must be the first child");
+            expect(children[1].get() == &second,
+                   "[1] must be the second child");
         });
     });
 }

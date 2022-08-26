@@ -8,100 +8,116 @@
 #include <string>
 #include <vector>
 
-namespace tests {
-class test {
+namespace tests
+{
+  class test
+  {
   public:
-    virtual const char* get_name() const = 0;
+    virtual const char *get_name() const = 0;
     virtual bool run() = 0;
-};
+  };
 
-using run_fn = std::function<void()>;
-using it_fn = std::function<void(const char*, const run_fn& _case)>;
-using setup_fn = std::function<void(it_fn)>;
+  using run_fn = std::function<void()>;
+  using it_fn = std::function<void(const char *, const run_fn &_case)>;
+  using setup_fn = std::function<void(it_fn)>;
 
-void test(const char* name, const run_fn& run) {
+  void test(const char *name, const run_fn &run)
+  {
     printf("TEST '%s'\n", name);
-    try {
-        run();
-        printf("\tOK\n");
-    } catch (const std::exception& ex) {
-        // auto ex = std::current_exception();
-        printf("\tFAILED: %s\n", ex.what());
+    try
+    {
+      run();
+      printf("\tOK\n");
     }
-}
+    catch (const std::exception &ex)
+    {
+      // auto ex = std::current_exception();
+      printf("\tFAILED: %s\n", ex.what());
+    }
+  }
 
-void expect(bool expectation) {
-    if (!expectation) {
-        throw std::logic_error("Expectation failed!");
+  void expect(bool expectation)
+  {
+    if (!expectation)
+    {
+      throw std::logic_error("Expectation failed!");
     }
-}
-void expect(bool expectation, const char* message) {
-    if (!expectation) {
-        throw std::logic_error(message);
+  }
+  void expect(bool expectation, const char *message)
+  {
+    if (!expectation)
+    {
+      throw std::logic_error(message);
     }
-}
+  }
 
-class suite {
+  class suite
+  {
     const std::string _name;
     std::map<std::string, run_fn> _cases;
 
   public:
-    suite(const char* a_name) : _name(a_name) {}
+    suite(const char *a_name) : _name(a_name) {}
     ~suite() {}
-    void add(const char* a_scenario, const run_fn& fn) {
-        std::stringstream ss;
-        ss << _name << ": " << a_scenario;
-        _cases.insert(std::make_pair(ss.str(), fn));
+    void add(const char *a_scenario, const run_fn &fn)
+    {
+      std::stringstream ss;
+      ss << _name << ": " << a_scenario;
+      _cases.insert(std::make_pair(ss.str(), fn));
     }
-    void run() {
-        for (const auto& pair : _cases) {
-            test(pair.first.c_str(), pair.second);
-        }
+    void run()
+    {
+      for (const auto &pair : _cases)
+      {
+        test(pair.first.c_str(), pair.second);
+      }
     }
-};
+  };
 
-void describe(const char* topic, const setup_fn& setup) {
+  void describe(const char *topic, const setup_fn &setup)
+  {
     suite s{topic};
-    setup([&s](const char* scenario, const run_fn& run) {
-        s.add(scenario, run);
-    });
+    setup(
+        [&s](const char *scenario, const run_fn &run)
+        { s.add(scenario, run); });
     s.run();
-}
+  }
 
-void run_all() {
-    describe("tree", [](const it_fn& it) {
-        it("creates nodes", [] {
-            ui::Tree tree{};
-            auto& root = tree.get_root();
-            root.create_child();
-            expect(root.get_child_count() == 1, "root must have 1 child");
-            expect(tree.get_node_count() == 2, "tree must have 2 children");
-            root.create_child();
-            expect(root.get_child_count() == 2);
-            expect(tree.get_node_count() == 3);
-        });
-        it("creates nested nodes", [] {
-            ui::Tree tree{};
-            auto& root = tree.get_root();
-            auto child = root.create_child();
-            expect(root.get_child_count() == 1, "root must have 1 child");
-            expect(tree.get_node_count() == 2, "tree must have 2 children");
-            child.create_child();
-            expect(root.get_child_count() == 1, "root must still have 1 child");
-            expect(child.get_child_count() == 1, "child must have 1 child");
-            expect(tree.get_node_count() == 3, "tree now has 3 children");
-        });
-        it("has a direct api", [] {
-            ui::Tree tree{};
-            auto& root = tree.get_root();
-            auto& child = tree.create_child(root);
-            expect(root.get_child_count() == 1, "root must have 1 child");
-            expect(tree.get_node_count() == 2, "tree must have 2 children");
-            tree.create_child(child);
-            expect(root.get_child_count() == 1, "root must still have 1 child");
-            expect(child.get_child_count() == 1, "child must have 1 child");
-            expect(tree.get_node_count() == 3, "tree now has 3 children");
-        });
+  void run_all()
+  {
+    describe("tree", [](const it_fn &it)
+             {
+    it("creates nodes", [] {
+      ui::Tree tree{};
+      auto &root = tree.get_root();
+      root.create_child();
+      expect(root.get_child_count() == 1, "root must have 1 child");
+      expect(tree.get_node_count() == 2, "tree must have 2 children");
+      root.create_child();
+      expect(root.get_child_count() == 2);
+      expect(tree.get_node_count() == 3);
     });
-}
+    it("creates nested nodes", [] {
+      ui::Tree tree{};
+      auto &root = tree.get_root();
+      auto child = root.create_child();
+      expect(root.get_child_count() == 1, "root must have 1 child");
+      expect(tree.get_node_count() == 2, "tree must have 2 children");
+      child.create_child();
+      expect(root.get_child_count() == 1, "root must still have 1 child");
+      expect(child.get_child_count() == 1, "child must have 1 child");
+      expect(tree.get_node_count() == 3, "tree now has 3 children");
+    });
+    it("has a direct api", [] {
+      ui::Tree tree{};
+      auto &root = tree.get_root();
+      auto &child = tree.create_child(root);
+      expect(root.get_child_count() == 1, "root must have 1 child");
+      expect(tree.get_node_count() == 2, "tree must have 2 children");
+      tree.create_child(child);
+      expect(root.get_child_count() == 1, "root must still have 1 child");
+      expect(child.get_child_count() == 1, "child must have 1 child");
+      expect(tree.get_node_count() == 3, "tree now has 3 children");
+    }); });
+  }
 } // namespace tests

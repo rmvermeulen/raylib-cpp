@@ -6,6 +6,15 @@
 
 namespace ui {
 Tree::Tree() { _nodes.push_back(std::make_shared<Node>(*this)); }
+Tree::Tree(NodeData root_data) {
+    NodeData& current_data = root_data;
+    const auto& root = std::make_shared<Node>(*this);
+    std::shared_ptr current_node = root;
+
+    root->set_type(root_data.type);
+    _nodes.push_back(root);
+    // todo: build from nodes
+}
 
 Tree::~Tree() {}
 

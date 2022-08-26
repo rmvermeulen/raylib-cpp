@@ -2,6 +2,8 @@
 #include <memory>
 #include <vector>
 
+#include "node_data.h"
+
 namespace ui {
 class Node;
 class Tree {
@@ -10,6 +12,7 @@ class Tree {
 
   public:
     Tree(/* args */);
+    Tree(NodeData nodes);
     ~Tree();
 
     // main stuff

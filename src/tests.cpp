@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ui/node.h"
+#include "ui/node_data.h"
 #include "ui/tree.h"
 namespace tests {
 class test {
@@ -131,6 +132,26 @@ void run_all() {
             expect(children[0].get() == &first, "[0] must be the first child");
             expect(children[1].get() == &second,
                    "[1] must be the second child");
+        });
+
+        it("can use node_data", [] {
+            ui::NodeData data{
+                ui::NodeType::Row,
+                {
+                    ui::NodeData{ui::NodeType::Column,
+                                 {
+                                     ui::NodeData{ui::NodeType::Leaf},
+                                     ui::NodeData{ui::NodeType::Leaf},
+                                 }},
+                    ui::NodeData{ui::NodeType::Column,
+                                 {
+                                     ui::NodeData{ui::NodeType::Leaf},
+                                     ui::NodeData{ui::NodeType::Leaf},
+                                 }},
+
+                }};
+            ui::Tree tree{data};
+            expect(tree.get_node_count() == 7, "All nodes are built");
         });
     });
 }

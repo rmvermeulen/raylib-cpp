@@ -3,18 +3,20 @@
 #include <vector>
 namespace ui {
 class Tree;
-class node {
+class Node {
   private:
     friend class Tree;
     Tree& _tree;
-    std::weak_ptr<node> _parent;
+    std::weak_ptr<Node> _parent;
     size_t _child_count = 0;
 
   public:
-    node(Tree& a_tree);
-    ~node();
+    Node(Tree& a_tree);
+    ~Node();
     size_t get_child_count() const;
-    node& create_child();
+    Node& create_child();
+
+    const std::weak_ptr<Node>& get_parent() const;
 };
 
 } // namespace ui

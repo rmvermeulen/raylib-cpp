@@ -3,12 +3,13 @@
 #include <memory>
 namespace ui {
 
-node::node(Tree& a_tree) : _tree(a_tree) {}
+Node::Node(Tree& a_tree) : _tree(a_tree) {}
 
-node::~node() {}
+Node::~Node() {}
 
-size_t node::get_child_count() const { return _child_count; }
+size_t Node::get_child_count() const { return _child_count; }
 
-node& node::create_child() { return _tree.create_child_for(*this); }
+Node& Node::create_child() { return _tree.create_child_for(*this); }
 
+const std::weak_ptr<Node>& Node::get_parent() const { return _parent; }
 } // namespace ui

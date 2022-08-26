@@ -1,12 +1,16 @@
+#define RAYGUI_IMPLEMENTATION
+// #define RUN_TESTS
+
 #include <chrono>
 #include <iomanip>
-#include <raylib-cpp.hpp>
 #include <sstream>
+
+#include <raylib.h>
+#include <raylib-cpp.hpp>
+#include <raygui.h>
 
 #include "core/framework.h"
 #include "tests.h"
-
-#define RUN_TESTS
 
 void run_game()
 {
@@ -35,11 +39,14 @@ void run_game()
 
     // Draw
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
     textColor.DrawText("Congrats! You created your first window!", 190, 200,
                        20);
     textColor.DrawText("And this is my own addition, even!", 190, 220, 20);
     console.Render();
+
+    GuiPanel((Rectangle){560, 25 + 180, 100, 160}, "Panel Info");
+
     EndDrawing();
   }
 }

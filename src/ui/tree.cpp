@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "../functions.h"
 #include "node.h"
 #include "tree.h"
 
@@ -38,15 +39,15 @@ size_t Tree::get_node_index(const Node& node) const {
 }
 
 void Tree::_init(NodeData a_data) {
-    printf("init: preparing for %d nodes\n", a_data.get_total_count());
+    println("init: preparing for %d nodes", a_data.get_total_count());
     auto root = std::make_shared<Node>(*this);
     _nodes.push_back(root);
     auto total = _apply(*root, a_data, 0);
-    printf("init: done. %d/%d nodes created\n", _nodes.size(), total);
+    println("init: done. %d/%d nodes created", _nodes.size(), total);
 }
 
 size_t Tree::_apply(Node& a_target, NodeData a_data, size_t a_depth) {
-    printf("apply[%d] with %d children\n", a_depth, a_data.children.size());
+    println("apply[%d] with %d children", a_depth, a_data.children.size());
     a_target.set_type(a_data.type);
     std::vector<std::pair<std::shared_ptr<Node>, NodeData>> created_nodes;
     created_nodes.reserve(a_data.children.size());
@@ -59,7 +60,7 @@ size_t Tree::_apply(Node& a_target, NodeData a_data, size_t a_depth) {
     size_t total = 1;
     for (auto& pair : created_nodes)
         total += _apply(*pair.first, pair.second, a_depth + 1);
-    printf("apply[%d] created: %d\n", a_depth, total);
+    println("apply[%d] created: %d", a_depth, total);
     return total;
 }
 

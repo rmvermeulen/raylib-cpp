@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "functions.h"
 #include "ui/node.h"
 #include "ui/node_data.h"
 #include "ui/tree.h"
@@ -22,13 +23,13 @@ using it_fn = std::function<void(const char*, const run_fn& _case)>;
 using setup_fn = std::function<void(it_fn)>;
 
 void test(const char* name, const run_fn& run) {
-    printf("TEST '%s'\n", name);
+    println("TEST '%s'", name);
     try {
         run();
-        printf("\tOK\n");
+        println("\tOK");
     } catch (const std::exception& ex) {
         // auto ex = std::current_exception();
-        printf("\tFAILED: %s\n", ex.what());
+        println("\tFAILED: %s", ex.what());
     }
 }
 
@@ -185,8 +186,8 @@ void run_all() {
 
                 }};
             ui::Tree tree{data};
-            printf("created = %d, expected = %d\n", tree.get_node_count(),
-                   data.get_total_count());
+            println("created = %d, expected = %d", tree.get_node_count(),
+                    data.get_total_count());
             expect(tree.get_node_count() == 1 + data.get_total_count(),
                    "All nodes + root-node are created");
         });

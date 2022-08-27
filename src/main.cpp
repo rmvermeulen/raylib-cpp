@@ -58,11 +58,11 @@ void run_game() {
 int main() {
 
 #ifdef RUN_TESTS
-    printf("main: running tests...\n");
+    println("main: running tests...");
     tests::run_all();
-    printf("main: tests done!\n");
+    println("main: tests done!");
 #else
-    printf("main: starting game!\n");
+    println("main: starting game!");
     run_game();
 #endif
     return 0;

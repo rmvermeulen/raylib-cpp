@@ -9,7 +9,7 @@ namespace tests {
 
 void tree_test() {
     using namespace testing;
-    describe("tree", [](const testing::Context& $) {
+    describe("tree", [](Setup& $) {
         $.before_each(&ui::Node::reset_static_id);
 
         $.it("creates nodes", [] {

@@ -38,4 +38,15 @@ void describe(const char* topic, const setup_test_cases_fn& setup_test_cases) {
     suite.run();
 }
 
+void describe(const char* topic,
+              const setup_test_cases_ctx_fn& setup_test_cases) {
+    Suite suite{topic};
+    // todo: add more hooked fns to the context
+    Context ctx{[&suite](const char* scenario, const run_fn& run) {
+        suite.add(scenario, run);
+    }};
+    setup_test_cases(ctx);
+    suite.run();
+}
+
 } // namespace testing

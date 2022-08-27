@@ -9,8 +9,10 @@ namespace tests {
 
 void tree_test() {
     using namespace testing;
-    describe("tree", [](const testing::it_fn& it) {
-        it("creates nodes", [] {
+    describe("tree", [](const testing::Context& $) {
+        $.before_each(&ui::Node::reset_static_id);
+
+        $.it("creates nodes", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             root.create_child();
@@ -20,8 +22,7 @@ void tree_test() {
             expect(root.get_child_count() == 2);
             expect(tree.get_node_count() == 3);
         });
-        it("gets the nodes' ids", [] {
-            ui::Node::reset_static_id();
+        $.it("gets the nodes' ids", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             root.create_child();
@@ -34,7 +35,7 @@ void tree_test() {
             //     println("%d\t got %d, expected %d", i, ids[i], expected[i]);
             expect(ids == expected, "ids must match expected list");
         });
-        it("creates nested nodes", [] {
+        $.it("creates nested nodes", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             auto& child = root.create_child();
@@ -45,7 +46,7 @@ void tree_test() {
             expect(child.get_child_count() == 1, "child must have 1 child");
             expect(tree.get_node_count() == 3, "tree now has 3 children");
         });
-        it("has a direct api", [] {
+        $.it("has a direct api", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             auto& child = tree.create_child_for(root, ui::NodeType::Row);
@@ -56,14 +57,14 @@ void tree_test() {
             expect(child.get_child_count() == 1, "child must have 1 child");
             expect(tree.get_node_count() == 3, "tree now has 3 children");
         });
-        it("sets the parent on new nodes", [] {
+        $.it("sets the parent on new nodes", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             auto& child = tree.create_child_for(root, ui::NodeType::Row);
             expect(child.get_parent().lock().get() == &root,
                    "child must have root as parent");
         });
-        it("can get the parents from a child", [] {
+        $.it("can get the parents from a child", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             auto& first = tree.create_child_for(root, ui::NodeType::Row);
@@ -75,7 +76,7 @@ void tree_test() {
             expect(parents[0].get() == &first);
             expect(parents[1].get() == &root);
         });
-        it("can get the children from a parent", [] {
+        $.it("can get the children from a parent", [] {
             ui::Tree tree{};
             auto& root = tree.get_root();
             const auto& first = tree.create_child_for(root, ui::NodeType::Row);
@@ -87,7 +88,7 @@ void tree_test() {
                    "[1] must be the second child");
         });
 
-        it("can use node_data", [] {
+        $.it("can use node_data", [] {
             ui::NodeData data{
                 ui::NodeType::Row,
                 {

@@ -6,8 +6,8 @@ namespace tests {
 
 void node_data_test() {
     using namespace testing;
-    describe("NodeData", [](const it_fn& it) {
-        it("counts total nodes", [] {
+    describe("NodeData", [](const Context& $) {
+        $.it("counts total nodes", [] {
             {
                 ui::NodeData data{ui::NodeType::Row};
                 expect(data.get_total_count() == 1, "must be 1 total");

@@ -1,4 +1,3 @@
-#pragma once
 #include "fn.h"
 
 #include <functional>
@@ -38,14 +37,22 @@ void describe(const char* topic, const setup_test_cases_fn& setup_test_cases) {
     suite.run();
 }
 
-void describe(const char* topic,
-              const setup_test_cases_ctx_fn& setup_test_cases) {
+void describe(const char* topic, const ctx_fn& setup_test_cases) {
     Suite suite{topic};
     // todo: add more hooked fns to the context
-    Context ctx{[&suite](const char* scenario, const run_fn& run) {
-        suite.add(scenario, run);
-    }};
+    Context ctx{
+        [&suite](const char* scenario, const run_fn& run) {
+            suite.add(scenario, run);
+        },
+        [&suite](run_fn fn) { suite.before_each(fn); },
+        [&suite](run_fn fn) { suite.after_each(fn); },
+        [&suite](run_fn fn) { suite.before_all(fn); },
+        [&suite](run_fn fn) { suite.after_all(fn); },
+
+    };
     setup_test_cases(ctx);
+    // if (verbose)
+    // suite.describe();
     suite.run();
 }
 

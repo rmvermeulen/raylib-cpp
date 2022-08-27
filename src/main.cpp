@@ -1,5 +1,5 @@
 #define RAYGUI_IMPLEMENTATION
-#define RUN_TESTS
+#define RUN_TESTS 1
 
 #include <chrono>
 #include <iomanip>
@@ -48,6 +48,11 @@ void run_game() {
                            20);
         textColor.DrawText("And this is my own addition, even!", 190, 220, 20);
 
+        if (GuiButton(Rectangle{10, 10, 100, 100},
+                      "#05#Open Image")) { /* ACTION */
+            println("click!");
+        }
+
         GuiPanel(console_output_rect, "Console");
         console.Render(console_pos + Vector2{0, 25});
 
@@ -57,7 +62,7 @@ void run_game() {
 
 int main() {
 
-#ifdef RUN_TESTS
+#if RUN_TESTS
     println("main: running tests...");
     tests::run_all();
     println("main: tests done!");

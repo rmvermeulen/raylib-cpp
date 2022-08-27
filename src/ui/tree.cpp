@@ -30,12 +30,25 @@ std::shared_ptr<Node> Tree::_create_child_for(Node& a_parent,
 Node& Tree::get_root() const { return *_nodes[0]; }
 
 size_t Tree::get_node_count() const { return _nodes.size(); }
+
 size_t Tree::get_node_index(const Node& node) const {
     for (size_t i = 0; i < _nodes.size(); ++i) {
         if (_nodes[i].get() == &node)
             return i;
     }
     return -1;
+}
+
+std::vector<size_t> Tree::get_node_ids() const {
+    std::vector<size_t> result;
+    result.reserve(_nodes.size());
+    println("Tree::get_node_ids: create result of size %d", _nodes.size());
+    std::for_each(_nodes.begin(), _nodes.end(),
+                  [&result](std::shared_ptr<Node> node) {
+                      println("getting the node's id (%d)", node->get_id());
+                      result.push_back(node->get_id());
+                  });
+    return result;
 }
 
 void Tree::_init(NodeData a_data) {

@@ -1,4 +1,6 @@
+
 #include "../testing.h"
+#include <vector>
 
 #include "node.h"
 #include "tree.h"
@@ -17,6 +19,20 @@ void tree_test() {
             root.create_child();
             expect(root.get_child_count() == 2);
             expect(tree.get_node_count() == 3);
+        });
+        it("gets the nodes' ids", [] {
+            ui::Node::reset_static_id();
+            ui::Tree tree{};
+            auto& root = tree.get_root();
+            root.create_child();
+            root.create_child();
+
+            std::vector<size_t> expected{0, 1, 2};
+            const auto& ids = tree.get_node_ids();
+            expect(ids.size() == expected.size(), "wrong number of ids");
+            // for (int i = 0; i < ids.size(); ++i)
+            //     println("%d\t got %d, expected %d", i, ids[i], expected[i]);
+            expect(ids == expected, "ids must match expected list");
         });
         it("creates nested nodes", [] {
             ui::Tree tree{};

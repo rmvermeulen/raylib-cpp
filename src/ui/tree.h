@@ -21,6 +21,7 @@ class Tree {
     // main stuff
     Node& get_root() const;
     size_t get_node_count() const;
+    std::vector<size_t> get_node_ids() const;
 
     // parent stuff
     size_t get_node_index(const Node& node) const;

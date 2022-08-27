@@ -25,7 +25,6 @@ void expect(bool expectation);
 
 void expect(bool expectation, const char* message);
 
-void describe(const char* topic, const setup_test_cases_fn& setup_test_cases);
 void describe(const char* topic, const ctx_fn& setup_test_cases);
 
 } // namespace testing

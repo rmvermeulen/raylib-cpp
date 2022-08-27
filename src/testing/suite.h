@@ -11,7 +11,7 @@ namespace testing {
 
 class Suite {
     const std::string _name;
-    std::map<std::string, run_fn> _cases;
+    std::vector<std::pair<std::string, run_fn>> _cases;
 
     std::vector<run_fn> _before_each;
     std::vector<run_fn> _after_each;
@@ -29,7 +29,17 @@ class Suite {
     void add(const char* a_scenario, const run_fn& fn) {
         std::stringstream ss;
         ss << _name << ": " << a_scenario;
-        _cases.insert(std::make_pair(ss.str(), fn));
+        auto full_name = ss.str();
+
+        if (std::any_of(_cases.begin(), _cases.end(),
+                        [&full_name](std::pair<std::string, run_fn> pair) {
+                            return full_name == pair.first;
+                        })) {
+            const auto& message =
+                "Duplicate test case name: '" + full_name + "'";
+            throw std::logic_error(message);
+        }
+        _cases.push_back(std::make_pair(ss.str(), fn));
     }
     void run() {
         _run_hooks(_before_all);

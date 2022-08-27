@@ -29,14 +29,6 @@ void expect(bool expectation, const char* message) {
     }
 }
 
-void describe(const char* topic, const setup_test_cases_fn& setup_test_cases) {
-    Suite suite{topic};
-    setup_test_cases([&suite](const char* scenario, const run_fn& run) {
-        suite.add(scenario, run);
-    });
-    suite.run();
-}
-
 void describe(const char* topic, const ctx_fn& setup_test_cases) {
     Suite suite{topic};
     // todo: add more hooked fns to the context

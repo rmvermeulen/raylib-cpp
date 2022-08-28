@@ -21,18 +21,29 @@ template <typename T> class Tree {
 };
 
 template <typename T> struct Tree<T>::Node {
+    NodeType type;
     std::unique_ptr<T> data;
     std::weak_ptr<Node> parent;
     std::vector<std::shared_ptr<Node>> children;
+    class Builder {
+      protected:
+        std::shared_ptr<Node> _root;
+        std::shared_ptr<Node> _add_child(const NodeType&);
+
+      public:
+        Builder(std::shared_ptr<Node> root);
+        Builder();
+        Builder& add_child(const NodeType&);
+        Builder& add_child(const NodeType&, std::function<void(Builder&)>);
+        std::shared_ptr<Node> build() const;
+    };
 };
-template <typename T> class Tree<T>::Builder {
+template <typename T> class Tree<T>::Builder : public Tree<T>::Node::Builder {
   public:
     Builder();
-
-    const Builder& add_child(const NodeType&) const;
-    const Builder& add_child(const NodeType&,
-                             std::function<void(const Builder&)>) const;
-
+    Builder& add_child(const NodeType&);
+    Builder& add_child(const NodeType&,
+                       std::function<void(typename Tree<T>::Node::Builder&)>);
     std::unique_ptr<Tree<T>> build() const;
 };
 

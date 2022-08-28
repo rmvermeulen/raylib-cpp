@@ -28,10 +28,9 @@ void tree_test() {
             Tree::Builder builder;
             const auto& tree =
                 builder
-                    .add_child(NodeType::Div,
-                               [](const Tree::Builder& builder) {
-                                   builder.add_child(NodeType::Div);
-                               })
+                    .add_child(
+                        NodeType::Div,
+                        [](auto& builder) { builder.add_child(NodeType::Div); })
                     .build();
             expect(tree != nullptr, "Got a valid tree");
             expect(tree->get_node_count() == 2,

@@ -5,7 +5,7 @@
 #include "node.h"
 #include "tree.h"
 
-namespace tests {
+namespace ui::tests {
 
 void tree_test() {
     using namespace testing;
@@ -113,4 +113,4 @@ void tree_test() {
     });
 }
 
-} // namespace tests
+} // namespace ui::tests

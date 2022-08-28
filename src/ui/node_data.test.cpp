@@ -2,7 +2,7 @@
 #include "../functions.h"
 #include "../testing.h"
 
-namespace tests {
+namespace ui::tests {
 
 void node_data_test() {
     using namespace testing;
@@ -39,4 +39,4 @@ void node_data_test() {
     });
 }
 
-} // namespace tests
+} // namespace ui::tests

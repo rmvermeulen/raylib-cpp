@@ -69,6 +69,8 @@ Tree<T>::Node::Builder& Tree<T>::Node::Builder::add_child(
 // TREE BUILDER
 /////////////////
 
+template <typename T> Tree<T>::Builder::Builder() {}
+
 template <typename T>
 Tree<T>::Builder& Tree<T>::Builder::add_child(const NodeType& a_type) {
     Tree<T>::Node::Builder::_add_child(a_type);

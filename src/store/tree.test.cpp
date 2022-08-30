@@ -11,7 +11,7 @@ void tree_test() {
     using namespace testing;
     using Tree = store::Tree<std::string>;
 
-    describe("store::tree", [](Setup& $) {
+    describe("store::Tree", [](Setup& $) {
         $.it("it can be built", [] {
             Tree::Builder builder;
             const auto& tree = builder.build();

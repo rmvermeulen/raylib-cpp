@@ -11,6 +11,7 @@
 namespace testing {
 
 class Suite : public Setup {
+    bool _has_hooks = false;
     const std::string _name;
     std::vector<std::pair<std::string, run_fn>> _cases;
 

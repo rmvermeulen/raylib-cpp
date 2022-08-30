@@ -31,8 +31,9 @@ void expect(bool expectation, const char* message) {
 
 void describe(const char* topic, const suite_setup_fn& setup_test_cases) {
     Suite suite{topic};
-    setup_test_cases(static_cast<Setup&>(suite));
-    // if (verbose) suite.describe();
+    setup_test_cases(suite);
+    if (true) // verbose
+        suite.describe();
     suite.run();
 }
 

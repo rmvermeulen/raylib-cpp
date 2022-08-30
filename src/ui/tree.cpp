@@ -1,120 +1,100 @@
-#include <algorithm>
+#include "tree.h"
 #include <memory>
+#include <numeric>
 
 #include "../functions.h"
-#include "node.h"
-#include "tree.h"
 
 namespace ui {
-Tree::Tree() { _nodes.push_back(std::make_shared<Node>(*this)); }
-Tree::Tree(NodeData a_data) { _init(a_data); }
 
-Tree::~Tree() {}
+template <typename T> Tree<T>::Tree() {}
 
-Node& Tree::create_child_for(Node& a_parent, const NodeType& a_type) {
-    return *_create_child_for(a_parent, a_type);
+template <typename T>
+Tree<T>::Tree(std::unique_ptr<T> a_data)
+    : root(std::make_unique<Node>(Node::Type::Div, a_data, nullptr, {})) {}
+
+template <typename T> size_t Tree<T>::get_node_count() const {
+    return root == nullptr ? 0 : 1 + count_nodes(root);
+}
+template <typename T>
+size_t Tree<T>::count_nodes(const std::shared_ptr<Node>& a_node
+
+) const {
+    if (!a_node)
+        return 0;
+    const auto& children = a_node->children;
+    return std::accumulate(children.begin(), children.end(), 1,
+                           [](size_t acc, const std::shared_ptr<Node>& node) {
+                               return acc + node->children.size();
+                           });
 }
 
-std::shared_ptr<Node> Tree::_create_child_for(Node& a_parent,
-                                              const NodeType& type) {
-    auto pNode = std::make_shared<Node>(*this);
+/////////////////
+// NODE BUILDER
+/////////////////
 
-    ++a_parent._child_count;
-    pNode->_parent = *std::find_if(
-        _nodes.begin(), _nodes.end(),
-        [&](std::shared_ptr<Node> node) { return node.get() == &a_parent; });
+template <typename T> Tree<T>::Node::Builder::Builder() {}
 
-    _nodes.push_back(pNode);
-    return pNode;
-}
-Node& Tree::get_root() const { return *_nodes[0]; }
+template <typename T>
+Tree<T>::Node::Builder::Builder(std::shared_ptr<Node> a_root)
 
-size_t Tree::get_node_count() const { return _nodes.size(); }
+    : _root(a_root) {}
 
-size_t Tree::get_node_index(const Node& node) const {
-    for (size_t i = 0; i < _nodes.size(); ++i) {
-        if (_nodes[i].get() == &node)
-            return i;
-    }
-    return -1;
+template <typename T>
+std::shared_ptr<typename Tree<T>::Node>
+Tree<T>::Node::Builder::_add_child(const NodeType& a_type) {
+    return std::make_shared<Tree<T>::Node>(a_type);
 }
 
-std::vector<size_t> Tree::get_node_ids() const {
-    std::vector<size_t> result;
-    result.reserve(_nodes.size());
-    println("Tree::get_node_ids: create result of size %d", _nodes.size());
-    std::for_each(_nodes.begin(), _nodes.end(),
-                  [&result](std::shared_ptr<Node> node) {
-                      println("getting the node's id (%d)", node->get_id());
-                      result.push_back(node->get_id());
-                  });
-    return result;
+template <typename T>
+Tree<T>::Node::Builder&
+Tree<T>::Node::Builder::add_child(const NodeType& a_type) {
+    _add_child(a_type);
+    return *this;
 }
 
-void Tree::_init(NodeData a_data) {
-    println("init: preparing for %d nodes", a_data.get_total_count());
-    auto root = std::make_shared<Node>(*this);
-    _nodes.push_back(root);
-    auto total = _apply(*root, a_data, 0);
-    println("init: done. %d/%d nodes created", _nodes.size(), total);
+template <typename T>
+Tree<T>::Node::Builder& Tree<T>::Node::Builder::add_child(
+    const NodeType& a_type,
+    std::function<void(Tree<T>::Node::Builder&)> a_configure) {
+    // add node by type
+    auto child = _add_child(a_type);
+    // configure node
+    Tree<T>::Node::Builder node_builder{child};
+    a_configure(node_builder);
+
+    return *this;
 }
 
-size_t Tree::_apply(Node& a_target, NodeData a_data, size_t a_depth) {
-    println("apply[%d] with %d children", a_depth, a_data.children.size());
-    a_target.set_type(a_data.type);
-    std::vector<std::pair<std::shared_ptr<Node>, NodeData>> created_nodes;
-    created_nodes.reserve(a_data.children.size());
+/////////////////
+// TREE BUILDER
+/////////////////
 
-    for (const auto& child_data : a_data.children) {
-        const auto& node = _create_child_for(a_target, child_data.type);
-        _nodes.push_back(node);
-        created_nodes.push_back(std::pair(node, child_data));
-    }
-    size_t total = 1;
-    for (auto& pair : created_nodes)
-        total += _apply(*pair.first, pair.second, a_depth + 1);
-    println("apply[%d] created: %d", a_depth, total);
-    return total;
+template <typename T> Tree<T>::Builder::Builder() {}
+
+template <typename T>
+Tree<T>::Builder& Tree<T>::Builder::add_child(const NodeType& a_type) {
+    Tree<T>::Node::Builder::_add_child(a_type);
+    return *this;
 }
 
-std::vector<std::shared_ptr<Node>>
-Tree::get_children_of(const Node& a_parent) const {
-    if (a_parent._parent.expired()) {
-        // parent is root_node
-        auto cc = a_parent.get_child_count();
-        std::vector<std::shared_ptr<Node>> children;
-        children.reserve(cc);
+template <typename T>
+Tree<T>::Builder& Tree<T>::Builder::add_child(
+    const NodeType& a_type,
+    std::function<void(typename Tree<T>::Node::Builder&)> a_configure) {
+    // add node by type
+    auto child = Tree<T>::Node::Builder::_add_child(a_type);
+    // configure node
+    typename Tree<T>::Node::Builder node_builder{child};
+    a_configure(node_builder);
 
-        std::copy(_nodes.begin() + 1, _nodes.begin() + 1 + cc,
-                  children.begin());
-        return children;
-    } else {
-        auto p = a_parent._parent.lock();
-        auto start = get_node_index(*p);
-        auto end = start + a_parent.get_child_count();
-
-        std::vector<std::shared_ptr<Node>> children;
-        children.reserve(a_parent.get_child_count());
-
-        std::copy(_nodes.begin() + start, _nodes.begin() + end,
-                  children.begin());
-        return children;
-    }
+    return *this;
 }
 
-std::vector<std::shared_ptr<Node>>
-Tree::get_parents_of(const Node& a_parent) const {
-    std::vector<std::shared_ptr<Node>> parents{};
-    auto p = &a_parent;
-    while (p != nullptr) {
-        bool is_expired = p->_parent.expired();
-        if (is_expired)
-            break;
-
-        auto next = p->_parent.lock();
-        parents.push_back(next);
-        p = next.get();
-    }
-    return parents;
+template <typename T> std::unique_ptr<Tree<T>> Tree<T>::Builder::build() const {
+    // auto tree = std::make_unique<Tree<T>>();
+    // tree->root = root;
+    // return tree;
+    return std::make_unique<Tree<T>>();
 }
+
 } // namespace ui

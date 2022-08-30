@@ -1,5 +1,5 @@
 #define RAYGUI_IMPLEMENTATION
-#define RUN_TESTS 1
+#define RUN_TESTS 0
 
 #include <chrono>
 #include <iomanip>
@@ -8,7 +8,6 @@
 #include <raygui.h>
 #include <raylib-cpp.hpp>
 
-#include "./core/framework.h"
 #include "./functions.h"
 #include "./tests.h"
 
@@ -23,16 +22,6 @@ void run_game() {
                           "Raylib C++ Starter Kit Example", false);
 
     SetTargetFPS(60);
-
-    core::Framework f;
-    auto& console = f.console;
-    console.Log("console initialized!");
-    console.Log("more lines to log woohoo!");
-    console.Log("EVEN MORE lines to log woohoo!");
-
-    Vector2 console_pos{0, screenHeight - 160};
-    Rectangle console_output_rect{console_pos.x, console_pos.y, screenWidth,
-                                  160};
 
     // Main game loop
     while (!window.ShouldClose()) // Detect window close button or ESC key
@@ -52,9 +41,6 @@ void run_game() {
                       "#05#Open Image")) { /* ACTION */
             println("click!");
         }
-
-        GuiPanel(console_output_rect, "Console");
-        console.Render(console_pos + Vector2{0, 25});
 
         EndDrawing();
     }

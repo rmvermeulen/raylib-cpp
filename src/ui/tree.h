@@ -1,36 +1,50 @@
 #pragma once
+#include <functional>
 #include <memory>
-#include <vector>
-
-#include "node_data.h"
 
 namespace ui {
-class Node;
-class Tree {
-  private:
-    std::vector<std::shared_ptr<Node>> _nodes;
-    void _init(NodeData);
-    size_t _apply(Node&, NodeData, size_t);
-    std::shared_ptr<Node> _create_child_for(Node& parent, const NodeType& type);
+
+enum NodeType { Div, Label, List };
+
+template <typename T> class Tree {
+    struct Node;
+    std::shared_ptr<Node> root;
 
   public:
-    Tree(/* args */);
-    Tree(NodeData);
-    ~Tree();
+    Tree();
+    Tree(std::unique_ptr<T> a_data);
+    class Builder;
+    friend std::unique_ptr<Tree<T>> Builder::build() const;
 
-    // main stuff
-    Node& get_root() const;
     size_t get_node_count() const;
-    std::vector<size_t> get_node_ids() const;
+    size_t count_nodes(const std::shared_ptr<Node>&) const;
+};
 
-    // parent stuff
-    size_t get_node_index(const Node& node) const;
-    Node& create_child_for(Node& parent, const NodeType& type);
+template <typename T> struct Tree<T>::Node {
+    NodeType type;
+    std::unique_ptr<T> data;
+    std::weak_ptr<Node> parent;
+    std::vector<std::shared_ptr<Node>> children;
+    class Builder {
+      protected:
+        std::shared_ptr<Node> _root;
+        std::shared_ptr<Node> _add_child(const NodeType&);
 
-    std::vector<std::shared_ptr<Node>>
-    get_children_of(const Node& parent) const;
-
-    std::vector<std::shared_ptr<Node>> get_parents_of(const Node&) const;
+      public:
+        Builder(std::shared_ptr<Node> root);
+        Builder();
+        Builder& add_child(const NodeType&);
+        Builder& add_child(const NodeType&, std::function<void(Builder&)>);
+        std::shared_ptr<Node> build() const;
+    };
+};
+template <typename T> class Tree<T>::Builder : public Tree<T>::Node::Builder {
+  public:
+    Builder();
+    Builder& add_child(const NodeType&);
+    Builder& add_child(const NodeType&,
+                       std::function<void(typename Tree<T>::Node::Builder&)>);
+    std::unique_ptr<Tree<T>> build() const;
 };
 
 } // namespace ui

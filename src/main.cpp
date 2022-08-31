@@ -8,6 +8,7 @@
 #include <raygui.h>
 #include <raylib-cpp.hpp>
 
+#include "./core/object.h"
 #include "./functions.h"
 #include "./tests.h"
 

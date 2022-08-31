@@ -35,9 +35,7 @@ size_t Tree<T>::count_nodes(const std::shared_ptr<Node>& a_node
 template <typename T> Tree<T>::Node::Builder::Builder() {}
 
 template <typename T>
-Tree<T>::Node::Builder::Builder(std::shared_ptr<Node> a_root)
-
-    : _root(a_root) {}
+Tree<T>::Node::Builder::Builder(std::shared_ptr<Node> a_root) : _root(a_root) {}
 
 template <typename T>
 std::shared_ptr<typename Tree<T>::Node>

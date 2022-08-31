@@ -74,6 +74,8 @@
     "thread": "cpp",
     "cfenv": "cpp",
     "cinttypes": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "*.ipp": "cpp",
+    "*.h++": "cpp"
   }
 }

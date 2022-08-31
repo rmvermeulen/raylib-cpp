@@ -7,3 +7,12 @@
 [submodule "vendor/raygui"]
 	path = vendor/raygui
 	url = https://github.com/raysan5/raygui.git
+[submodule "vendor/immer"]
+	path = vendor/immer
+	url = https://github.com/arximboldi/immer.git
+[submodule "vendor/libhttpserver"]
+	path = vendor/libhttpserver
+	url = https://github.com/etr/libhttpserver.git
+[submodule "vendor/lager"]
+	path = vendor/lager
+	url = https://github.com/arximboldi/lager.git

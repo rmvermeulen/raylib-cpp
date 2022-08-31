@@ -75,6 +75,10 @@ include: submodules
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
 	$(call COPY,vendor/raygui/src,./include,raygui.h)
+	$(MKDIR) $(call platformpth, ./include/lager)
+	$(call COPY,vendor/lager/lager,./include/lager,*.hpp)
+	$(MKDIR) $(call platformpth, ./include/immer)
+	$(call COPY,vendor/immer/immer,./include/immer,*.hpp)
 
 # Build the raylib static library file and copy it into lib
 lib: submodules

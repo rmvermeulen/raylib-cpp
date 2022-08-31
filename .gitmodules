@@ -10,12 +10,6 @@
 [submodule "vendor/immer"]
 	path = vendor/immer
 	url = https://github.com/arximboldi/immer.git
-[submodule "vendor/libhttpserver"]
-	path = vendor/libhttpserver
-	url = https://github.com/etr/libhttpserver.git
 [submodule "vendor/lager"]
 	path = vendor/lager
 	url = https://github.com/arximboldi/lager.git
-[submodule "vendor/catch2"]
-	path = vendor/catch2
-	url = https://github.com/catchorg/Catch2.git

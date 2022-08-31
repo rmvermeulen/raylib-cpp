@@ -8,3 +8,5 @@ UseTab: Never
 # Force pointers to the type for C++.
 DerivePointerAlignment: false
 PointerAlignment: Left
+# Personal preference
+NamespaceIndentation: All #Inner

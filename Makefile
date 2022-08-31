@@ -101,3 +101,4 @@ execute:
 # Clean up all relevant files
 clean:
 	$(RM) $(call platformpth, $(buildDir)/*)
+	git submodule foreach git clean -fxd

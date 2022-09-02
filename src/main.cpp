@@ -27,37 +27,28 @@ namespace State {
     }
 
     struct Model {
-        int counter{0};
-        immer::box<int> bCounter{0};
+        immer::box<int> frames{0};
+        immer::box<int> clicks{0};
         template <class Archive> void serialize(Archive& archive) {
-            archive(CEREAL_NVP(counter), CEREAL_NVP(bCounter.get()));
+            archive(CEREAL_NVP(frames.get()), CEREAL_NVP(clicks.get()));
         }
     };
     namespace actions {
-        struct increment {};
-        struct decrement {};
-        struct reset {
-            int new_counter = 0;
-        };
+        struct count_frame {};
+        struct count_click {};
     } // namespace actions
 
-    using Action =
-        std::variant<actions::increment, actions::decrement, actions::reset>;
+    using Action = std::variant<actions::count_frame, actions::count_click>;
 
     Model update(Model model, Action action) {
         const auto new_model =
             std::visit(lager::visitor{
-                           [&](actions::increment) {
-                               ++model.counter;
-                               model.bCounter = model.bCounter.update(add(1));
+                           [&](actions::count_frame) {
+                               model.frames = model.frames.update(add(1));
                                return model;
                            },
-                           [&](actions::decrement) {
-                               --model.counter;
-                               return model;
-                           },
-                           [&](actions::reset action) {
-                               model.counter = action.new_counter;
+                           [&](actions::count_click) {
+                               model.clicks = model.clicks.update(add(1));
                                return model;
                            },
                        },
@@ -97,7 +88,7 @@ void run_game() {
     {
         cereal::JSONOutputArchive json_out(std::cout);
         // Update
-        store.dispatch(State::actions::increment{});
+        store.dispatch(State::actions::count_frame{});
         // TODO: Update your variables here
         // std::cout << '\n';
         // json_out(CEREAL_NVP(store.get_state().counter));
@@ -120,6 +111,7 @@ void run_game() {
         if (GuiButton(Rectangle{10, 10, 100, 100},
                       "#05#Open Image")) { /* ACTION */
             println("click!");
+            store.dispatch(State::actions::count_click{});
         }
 
         EndDrawing();

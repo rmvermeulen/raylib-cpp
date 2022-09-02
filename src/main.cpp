@@ -15,9 +15,9 @@
 #include <raygui.h>
 #include <raylib-cpp.hpp>
 
-#include "./app.h"
 #include "./core/object.h"
 #include "./functions.h"
+#include "./store.h"
 
 namespace state {
 
@@ -69,14 +69,44 @@ namespace state {
     }
 } // namespace state
 
-void run_state_stuff() {
-    const auto old_model = state::Model{0};
-    auto new_model = old_model;
-    for (int i = 0; i < 10; ++i) {
-        new_model = update(new_model, state::actions::increment{});
+class Reducer {
+  public:
+    state::Model reduce(state::Model m, state::Action a) {
+        return state::update(m, a);
     }
+};
 
-    App<state::Model, decltype(state::update), state::Action> app{};
+void run_state_stuff() {
+    cereal::JSONOutputArchive archive(std::cout);
+    // const auto old_model = state::Model{0};
+    // auto new_model = old_model;
+    // for (int i = 0; i < 10; ++i) {
+    //     new_model = update(new_model, state::actions::increment{});
+    // }
+
+    // Reducer reducer{};
+    // Store<state::Model, Reducer, state::Action> store{reducer};
+    // archive(CEREAL_NVP(store.get_state()));
+
+    // store.dispatch(state::actions::increment{});
+    // store.dispatch(state::actions::increment{});
+    // store.dispatch(state::actions::increment{});
+
+    // auto latest = store.get_state();
+    // archive(CEREAL_NVP(latest));
+
+    Store<state::Model,
+          std::function<state::Model(state::Model, state::Action)>,
+          state::Action>
+        store{&state::update};
+    archive(CEREAL_NVP(store.get_state()));
+
+    store.dispatch(state::actions::increment{});
+    store.dispatch(state::actions::increment{});
+    store.dispatch(state::actions::increment{});
+
+    auto latest = store.get_state();
+    archive(CEREAL_NVP(latest));
 }
 
 void run_game() {

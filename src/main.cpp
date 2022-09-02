@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 
 #include <cereal/archives/json.hpp>
 #include <immer/box.hpp>
@@ -13,15 +15,22 @@
 #include <raygui.h>
 #include <raylib-cpp.hpp>
 
+#include "./app.h"
 #include "./core/object.h"
 #include "./functions.h"
 
 namespace state {
+
+    int add(int a, int b) { return a + b; }
+    std::function<int(int)> add(int a) {
+        return [=](int b) { return add(a, b); };
+    }
+
     struct Model {
         int counter{0};
         immer::box<int> bCounter{0};
         template <class Archive> void serialize(Archive& archive) {
-            archive(CEREAL_NVP(counter));
+            archive(CEREAL_NVP(counter), CEREAL_NVP(bCounter.get()));
         }
     };
     namespace actions {
@@ -36,25 +45,26 @@ namespace state {
         std::variant<actions::increment, actions::decrement, actions::reset>;
 
     Model update(Model model, Action action) {
-        const auto new_model = std::visit(lager::visitor{
-                                              [&](actions::increment) {
-                                                  ++model.counter;
-                                                  return model;
-                                              },
-                                              [&](actions::decrement) {
-                                                  --model.counter;
-                                                  return model;
-                                              },
-                                              [&](actions::reset action) {
-                                                  model.counter =
-                                                      action.new_counter;
-                                                  return model;
-                                              },
-                                          },
-                                          action);
+        const auto new_model =
+            std::visit(lager::visitor{
+                           [&](actions::increment) {
+                               ++model.counter;
+                               model.bCounter = model.bCounter.update(add(1));
+                               return model;
+                           },
+                           [&](actions::decrement) {
+                               --model.counter;
+                               return model;
+                           },
+                           [&](actions::reset action) {
+                               model.counter = action.new_counter;
+                               return model;
+                           },
+                       },
+                       action);
 
         cereal::JSONOutputArchive archive(std::cout);
-        archive(CEREAL_NVP(new_model.counter));
+        archive(CEREAL_NVP(new_model));
         return new_model;
     }
 } // namespace state
@@ -62,8 +72,11 @@ namespace state {
 void run_state_stuff() {
     const auto old_model = state::Model{0};
     auto new_model = old_model;
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) {
         new_model = update(new_model, state::actions::increment{});
+    }
+
+    App<state::Model, decltype(state::update), state::Action> app{};
 }
 
 void run_game() {

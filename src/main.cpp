@@ -19,6 +19,19 @@
 #include "./functions.h"
 #include "./store.h"
 
+bool EditableLabel(float x, bool is_confirmed, char* buf) {
+    Rectangle rect{x + 210, 200, 100, 100};
+    if (is_confirmed) {
+        GuiLabel(rect, buf);
+    } else {
+        if (GuiTextBox(rect, buf, 28, true)) {
+            println("confirmed: %s", buf);
+            return true;
+        }
+    }
+    return is_confirmed;
+}
+
 namespace State {
 
     int add(int a, int b) { return a + b; }
@@ -83,6 +96,14 @@ void run_game() {
           State::Action>
         store{&State::update};
 
+    char buffer1[1024];
+    memset(buffer1, 0, 1024);
+    bool confirm1 = false;
+
+    char buffer2[1024];
+    memset(buffer2, 0, 1024);
+    bool confirm2 = false;
+
     // Main game loop
     while (!window.ShouldClose()) // Detect window close button or ESC key
     {
@@ -107,6 +128,9 @@ void run_game() {
             // s += std::to_string(store.get_state().counter);
             textColor.DrawText(ss.str(), 190, 220, 20);
         }
+
+        confirm1 = EditableLabel(0, confirm1, buffer1);
+        confirm2 = EditableLabel(200, confirm2, buffer2);
 
         if (GuiButton(Rectangle{10, 10, 100, 100},
                       "#05#Open Image")) { /* ACTION */

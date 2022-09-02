@@ -19,7 +19,7 @@
 #include "./functions.h"
 #include "./store.h"
 
-namespace state {
+namespace State {
 
     int add(int a, int b) { return a + b; }
     std::function<int(int)> add(int a) {
@@ -63,55 +63,20 @@ namespace state {
                        },
                        action);
 
-        cereal::JSONOutputArchive archive(std::cout);
-        archive(CEREAL_NVP(new_model));
+        // cereal::JSONOutputArchive archive(std::cout);
+        // archive(CEREAL_NVP(new_model));
         return new_model;
     }
-} // namespace state
+} // namespace State
 
 class Reducer {
   public:
-    state::Model reduce(state::Model m, state::Action a) {
-        return state::update(m, a);
+    State::Model reduce(State::Model m, State::Action a) {
+        return State::update(m, a);
     }
 };
 
-void run_state_stuff() {
-    cereal::JSONOutputArchive archive(std::cout);
-    // const auto old_model = state::Model{0};
-    // auto new_model = old_model;
-    // for (int i = 0; i < 10; ++i) {
-    //     new_model = update(new_model, state::actions::increment{});
-    // }
-
-    // Reducer reducer{};
-    // Store<state::Model, Reducer, state::Action> store{reducer};
-    // archive(CEREAL_NVP(store.get_state()));
-
-    // store.dispatch(state::actions::increment{});
-    // store.dispatch(state::actions::increment{});
-    // store.dispatch(state::actions::increment{});
-
-    // auto latest = store.get_state();
-    // archive(CEREAL_NVP(latest));
-
-    Store<state::Model,
-          std::function<state::Model(state::Model, state::Action)>,
-          state::Action>
-        store{&state::update};
-    archive(CEREAL_NVP(store.get_state()));
-
-    store.dispatch(state::actions::increment{});
-    store.dispatch(state::actions::increment{});
-    store.dispatch(state::actions::increment{});
-
-    auto latest = store.get_state();
-    archive(CEREAL_NVP(latest));
-}
-
 void run_game() {
-    int wait;
-    std::cin >> wait;
     // Initialization
     int screenWidth = 800;
     int screenHeight = 450;
@@ -122,19 +87,35 @@ void run_game() {
 
     SetTargetFPS(60);
 
+    Store<State::Model,
+          std::function<State::Model(State::Model, State::Action)>,
+          State::Action>
+        store{&State::update};
+
     // Main game loop
     while (!window.ShouldClose()) // Detect window close button or ESC key
     {
+        cereal::JSONOutputArchive json_out(std::cout);
         // Update
-
+        store.dispatch(State::actions::increment{});
         // TODO: Update your variables here
+        // std::cout << '\n';
+        // json_out(CEREAL_NVP(store.get_state().counter));
 
         // Draw
         BeginDrawing();
         ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
         textColor.DrawText("Congrats! You created your first window!", 190, 200,
                            20);
-        textColor.DrawText("And this is my own addition, even!", 190, 220, 20);
+        {
+            std::stringstream ss;
+            ss << "And this is my own addition: ";
+            cereal::JSONOutputArchive dump(ss);
+            auto state = store.get_state();
+            dump(CEREAL_NVP(state));
+            // s += std::to_string(store.get_state().counter);
+            textColor.DrawText(ss.str(), 190, 220, 20);
+        }
 
         if (GuiButton(Rectangle{10, 10, 100, 100},
                       "#05#Open Image")) { /* ACTION */
@@ -146,7 +127,6 @@ void run_game() {
 }
 
 int main() {
-    run_state_stuff();
 #if RUN_TESTS
     println("main: running tests...");
     tests::run_all();

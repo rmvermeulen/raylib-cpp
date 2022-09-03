@@ -6,9 +6,11 @@
 
 # Define custom functions
 rwildcard = $(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-platformpth = $(subst /,$(PATHSEP),$1)
+platformpath = $(subst /,$(PATHSEP),$1)
 
 # Set global macros
+vcpkg := /home/rasmus/vcpkg
+vcpkgPlatform := x64-linux
 buildDir := bin
 executable := app
 target := $(buildDir)/$(executable)
@@ -29,7 +31,7 @@ ifeq ($(OS), Windows_NT)
 	PATHSEP := \$(BLANK)
 	MKDIR := -mkdir -p
 	RM := -del /q
-	COPY = -robocopy "$(call platformpth,$1)" "$(call platformpth,$2)" $3
+	COPY = -robocopy "$(call platformpath,$1)" "$(call platformpath,$2)" $3
 else
 	# Check for MacOS/Linux
 	UNAMEOS := $(shell uname)
@@ -79,12 +81,12 @@ include: submodules packages
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
 	# setup scope_guard
-	$(call COPY,vendor/scope_guard,./include,scope_guard.hpp)
+	cp vendor/scope_guard/scope_guard.hpp ./include
 
 # Build the raylib static library file and copy it into lib
 lib: submodules
 	cd vendor/raylib/src $(THEN) "$(MAKE)" PLATFORM=PLATFORM_DESKTOP
-	$(MKDIR) $(call platformpth, lib/$(platform))
+	$(MKDIR) $(call platformpath, lib/$(platform))
 	$(call COPY,vendor/raylib/$(libGenDir),lib/$(platform),libraylib.a)
 
 # Link the program and create the executable
@@ -96,7 +98,7 @@ $(target): $(objects)
 
 # Compile objects to the build directory
 $(buildDir)/%.o: src/%.cpp Makefile
-	$(MKDIR) $(call platformpth, $(@D))
+	$(MKDIR) $(call platformpath, $(@D))
 	$(CXX) -MMD -MP -c $(compileFlags) $< -o $@ $(CXXFLAGS)
 
 # Run the executable
@@ -105,5 +107,6 @@ execute:
 
 # Clean up all relevant files
 clean:
-	$(RM) $(call platformpth, $(buildDir)/*)
+	$(RM) $(call platformpath, $(buildDir)/*)
+	rm -rf include
 	git submodule foreach git clean -fxd

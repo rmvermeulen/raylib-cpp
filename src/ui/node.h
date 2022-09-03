@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <numeric>
 #include <string>
 #include <variant>
 #include <vector>
@@ -39,6 +40,14 @@ class Node {
     }
     static shared_ptr<Node> create(const vector<shared_ptr<Node>>& a_children) {
         return std::make_shared<Node>(a_children);
+    }
+
+    int get_child_count() const {
+        int count = children.size();
+        for (auto& child : children) {
+            count += child->get_child_count();
+        }
+        return count;
     }
 
   private:

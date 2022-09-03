@@ -1,6 +1,6 @@
 #pragma once
 #include <ostream>
-#include <raylib-cpp.hpp>
+#include <raylib/raylib-cpp.hpp>
 
 std::ostream& operator<<(std::ostream& os, const Vector2& v) {
     os << "(" << v.x << ", " << v.y << ")";

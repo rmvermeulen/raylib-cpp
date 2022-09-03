@@ -79,6 +79,8 @@ include: submodules
 	$(call COPY,vendor/lager/lager,./include/lager,*.hpp)
 	$(MKDIR) $(call platformpth, ./include/immer)
 	$(call COPY,vendor/immer/immer,./include/immer,*.hpp)
+	# setup scope_guard
+	$(call COPY,vendor/scope_guard,./include,scope_guard.hpp)
 
 # Build the raylib static library file and copy it into lib
 lib: submodules

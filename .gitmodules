@@ -13,3 +13,6 @@
 [submodule "vendor/lager"]
 	path = vendor/lager
 	url = https://github.com/arximboldi/lager.git
+[submodule "vendor/scope_guard"]
+	path = vendor/scope_guard
+	url = https://github.com/ricab/scope_guard.git

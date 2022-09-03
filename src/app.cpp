@@ -4,12 +4,16 @@
 #include <immer/box.hpp>
 #include <iostream>
 #include <lager/util.hpp>
+#include <string>
+#include <vector>
 
 #include "./functions.h"
 #include "./state/actions.h"
 #include "./state/model.h"
 #include "./state/reducers.h"
 #include "./state/store.h"
+
+#include "./ui/node.h"
 
 App::App(std::unique_ptr<raylib::Window> a_window) {
     window = std::move(a_window);
@@ -37,7 +41,20 @@ void App::start() {
           state::Action>
         store{&state::update};
 
+    auto root =
+        Node::create(Node::Column{},
+                     std::vector<std::shared_ptr<Node>>{
+                         Node::create(Node::Label{"This is a bunch of nodes!"}),
+                         Node::create(),
+                         Node::create(),
+                         Node::create(),
+                     });
+
+    int safety = 10e4;
+
     while (!window->ShouldClose()) {
+        if (!--safety)
+            break;
         // update stuff
         cereal::JSONOutputArchive json_out(std::cout);
 

@@ -12,7 +12,7 @@
 #include <cereal/archives/json.hpp>
 #include <immer/box.hpp>
 #include <lager/util.hpp>
-#include <raylib-cpp.hpp>
+#include <raylib/raylib-cpp.hpp>
 
 #include "./app.h"
 #include "./core/object.h"
@@ -29,10 +29,14 @@ int main() {
     println("main: starting app!");
 
     auto title = "Raylib C++ Starter Kit Example";
-    auto window = std::make_unique<raylib::Window>(800, 450, title, false);
-    // App app{800, 450, WHITE, GRAY, title, 60};
-    App app{std::move(window)};
-    app.start();
+    if (false) {
+        auto window = std::make_unique<raylib::Window>(800, 450, title, false);
+        App app{std::move(window), 60};
+        app.start();
+    } else {
+        App app{800, 450, 60, title, WHITE, GRAY};
+        app.start();
+    }
 #endif
     return 0;
 }

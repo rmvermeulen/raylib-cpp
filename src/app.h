@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <raylib-cpp.hpp>
+#include <raylib/raylib-cpp.hpp>
 
 template <typename T> struct Vector2t {
     T x;
@@ -19,13 +19,15 @@ class App {
     raylib::Color text_color;
 
   public:
-    App(std::unique_ptr<raylib::Window> a_window);
+    App(std::unique_ptr<raylib::Window> a_window, int a_fps,
+        const raylib::Color& a_text_color = LIGHTGRAY,
+        const raylib::Color& a_background_color = GRAY);
     App(
 
-        int width = 800, int height = 450,
+        int width = 800, int height = 450, int a_fps = 60,
+        const std::string& a_title = "Window title",
         const raylib::Color& a_text_color = LIGHTGRAY,
-        const raylib::Color& a_background_color = GRAY,
-        const char* a_title = "Window title", int a_fps = 60);
+        const raylib::Color& a_background_color = GRAY);
     ~App();
     inline const Color& get_background_color() const {
         return background_color;

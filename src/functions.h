@@ -1,7 +1,8 @@
 #pragma once
+#include <cstring>
 #include <functional>
-#include <raylib-cpp.hpp>
-#include <string.h>
+
+#include <raylib/raylib-cpp.hpp>
 
 template <typename... Args> inline void println(const char* fmt, Args... args) {
     char* fixed_fmt = new char[strlen(fmt) + 1];

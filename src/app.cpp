@@ -15,13 +15,17 @@
 
 #include "./ui/node.h"
 
-App::App(std::unique_ptr<raylib::Window> a_window) {
-    window = std::move(a_window);
+App::App(std::unique_ptr<raylib::Window> a_window, int a_fps,
+         const raylib::Color& a_text_color,
+         const raylib::Color& a_background_color)
+    : window(std::move(a_window)), text_color(a_text_color),
+      background_color(a_background_color) {
+    SetTargetFPS(a_fps);
 }
 
-App::App(int a_width, int a_height, const raylib::Color& a_text_color,
-         const raylib::Color& a_background_color, const char* a_title,
-         int a_fps)
+App::App(int a_width, int a_height, int a_fps, const std::string& a_title,
+         const raylib::Color& a_text_color,
+         const raylib::Color& a_background_color)
     : text_color(a_text_color), background_color(a_background_color) {
 
     window = std::make_unique<raylib::Window>(a_width, a_height, a_title, true);

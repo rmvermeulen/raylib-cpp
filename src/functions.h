@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <raylib-cpp.hpp>
 #include <string.h>
 
@@ -11,4 +12,9 @@ template <typename... Args> inline void println(const char* fmt, Args... args) {
 
 inline Vector2 operator+(const Vector2& a, const Vector2& b) {
     return Vector2{a.x + b.x, a.y + b.y};
+}
+
+inline int add(int a, int b) { return a + b; }
+inline std::function<int(int)> add(int a) {
+    return [=](int b) { return add(a, b); };
 }

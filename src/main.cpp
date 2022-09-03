@@ -17,23 +17,8 @@
 #include "./app.h"
 #include "./core/object.h"
 #include "./functions.h"
-#include "./store.h"
 
-void run_game() {
-    // Initialization
-    int screenWidth = 800;
-    int screenHeight = 450;
-
-    raylib::Color textColor(LIGHTGRAY);
-    raylib::Window window(screenWidth, screenHeight,
-                          "Raylib C++ Starter Kit Example", false);
-
-    SetTargetFPS(120);
-
-    App app{};
-
-    app.start();
-}
+void run_game() {}
 
 int main() {
 #if RUN_TESTS
@@ -41,8 +26,13 @@ int main() {
     tests::run_all();
     println("main: tests done!");
 #else
-    println("main: starting game!");
-    run_game();
+    println("main: starting app!");
+
+    auto title = "Raylib C++ Starter Kit Example";
+    auto window = std::make_unique<raylib::Window>(800, 450, title, false);
+    // App app{800, 450, WHITE, GRAY, title, 60};
+    App app{std::move(window)};
+    app.start();
 #endif
     return 0;
 }

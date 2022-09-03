@@ -5,69 +5,43 @@
 #include <iostream>
 #include <lager/util.hpp>
 
-#include "./store.h"
+#include "./functions.h"
+#include "./state/actions.h"
+#include "./state/model.h"
+#include "./state/reducers.h"
+#include "./state/store.h"
 
-namespace State {
+App::App(std::unique_ptr<raylib::Window> a_window) {
+    window = std::move(a_window);
+}
 
-    int add(int a, int b) { return a + b; }
-    std::function<int(int)> add(int a) {
-        return [=](int b) { return add(a, b); };
-    }
+App::App(int a_width, int a_height, const raylib::Color& a_text_color,
+         const raylib::Color& a_background_color, const char* a_title,
+         int a_fps)
+    : text_color(a_text_color), background_color(a_background_color) {
 
-    struct Model {
-        std::string some_text{"Is that a __nested__ \"quote\"?!"};
-        immer::box<int> frames{0};
-        immer::box<int> clicks{0};
-        template <class Archive> void serialize(Archive& archive) {
-            using cereal::make_nvp;
-            archive(make_nvp("some_text", some_text),
-                    make_nvp("fra:mes", frames.get()),
-                    make_nvp("clicks", clicks.get()));
-        }
-    };
-    namespace actions {
-        struct count_frame {};
-        struct count_click {};
-    } // namespace actions
-
-    using Action = std::variant<actions::count_frame, actions::count_click>;
-
-    Model update(Model model, Action action) {
-        const auto new_model =
-            std::visit(lager::visitor{
-                           [&](actions::count_frame) {
-                               model.frames = model.frames.update(add(1));
-                               return model;
-                           },
-                           [&](actions::count_click) {
-                               model.clicks = model.clicks.update(add(1));
-                               return model;
-                           },
-                       },
-                       action);
-
-        // cereal::JSONOutputArchive archive(std::cout);
-        // archive(CEREAL_NVP(new_model));
-        return new_model;
-    }
-} // namespace State
-
-App::App(/* args */) {}
+    window = std::make_unique<raylib::Window>(a_width, a_height, a_title, true);
+    SetTargetFPS(a_fps);
+    std::cout << "window created!\n"
+              << window->GetWidth() << " vs " << a_width << '\n'
+              << window->GetHeight() << " vs " << a_height << std::endl;
+}
 
 App::~App() {}
 
 void App::start() {
+    window->Init();
 
-    Store<State::Model,
-          std::function<State::Model(State::Model, State::Action)>,
-          State::Action>
-        store{&State::update};
+    Store<state::Model,
+          std::function<state::Model(state::Model, state::Action)>,
+          state::Action>
+        store{&state::update};
 
-    while (!window.ShouldClose()) {
+    while (!window->ShouldClose()) {
         // update stuff
         cereal::JSONOutputArchive json_out(std::cout);
 
-        store.dispatch(State::actions::count_frame{});
+        store.dispatch(state::actions::count_frame{});
         // collect render stuff
         BeginDrawing();
         ClearBackground(GRAY);
@@ -76,11 +50,9 @@ void App::start() {
         {
             std::stringstream ss;
             ss << "And this is my own addition: ";
-            {
-                cereal::JSONOutputArchive json(ss);
-                // json(CEREAL_NVP(store.get_state()));
-                json(cereal::make_nvp("app state", store.get_state()));
-            }
+
+            cereal::JSONOutputArchive json(ss);
+            json(cereal::make_nvp("app state", store.get_state()));
 
             text_color.DrawText(ss.str(), 190, 220, 20);
         }

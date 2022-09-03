@@ -7,7 +7,7 @@ template <typename TState, typename TReducer, typename TActions> class Store {
 
   public:
     Store(TReducer r) : state(), reducer(r) {
-        std::cout << "App created!" << std::endl;
+        std::cout << "Store created!" << std::endl;
     }
 
     TState get_state() const { return state; }

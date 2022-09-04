@@ -17,7 +17,7 @@ target := $(buildDir)/$(executable)
 sources := $(call rwildcard,src/,*.cpp)
 objects := $(patsubst src/%, $(buildDir)/%, $(patsubst %.cpp, %.o, $(sources)))
 depends := $(patsubst %.o, %.d, $(objects))
-compileFlags := -std=c++20 -I include -I vcpkg_installed/x64-linux/include
+compileFlags := -std=c++20 -I include -I $(vcpkgIncludeDir)
 linkFlags = -L lib/$(platform) -l raylib
 
 # Check for Windows
@@ -65,11 +65,12 @@ all: $(target) execute clean
 
 # Sets up the project for compiling, generates includes and libs
 setup: include lib
-	echo "includes and libs ✔"
+	echo -e "\nincludes and libs ✔\n"
 
 # Pull and update the the build submodules
 submodules:
 	git submodule update --init --recursive
+	echo -e "\nsubmodules✔\n"
 
 packages:
 	vcpkg install

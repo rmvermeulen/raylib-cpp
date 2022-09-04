@@ -9,8 +9,8 @@ rwildcard = $(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2
 platformpath = $(subst /,$(PATHSEP),$1)
 
 # Set global macros
-vcpkg := /home/rasmus/vcpkg
 vcpkgPlatform := x64-linux
+vcpkgIncludeDir := ./vcpkg_installed/$(vcpkgPlatform)/include
 buildDir := bin
 executable := app
 target := $(buildDir)/$(executable)
@@ -58,13 +58,14 @@ else
 endif
 
 # Lists phony targets for Makefile
-.PHONY: all setup submodules execute clean
+.PHONY: all setup submodules packages execute clean
 
 # Default target, compiles, executes and cleans
 all: $(target) execute clean
 
 # Sets up the project for compiling, generates includes and libs
 setup: include lib
+	echo "includes and libs ✔"
 
 # Pull and update the the build submodules
 submodules:

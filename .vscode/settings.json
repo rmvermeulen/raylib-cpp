@@ -77,5 +77,7 @@
     "valarray": "cpp",
     "*.ipp": "cpp",
     "*.h++": "cpp"
-  }
+  },
+  "C_Cpp.default.cppStandard": "c++20",
+  "C_Cpp.default.compilerArgs": ["-std=c++20 -I include"]
 }

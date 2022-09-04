@@ -1,7 +1,0 @@
-.layout
-    label.header This is a renderable thingamajig
-    .body
-        button click me
-        button do not click me!
-        button exit
-    

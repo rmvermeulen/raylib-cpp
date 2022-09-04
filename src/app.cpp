@@ -14,6 +14,7 @@
 #include "./state/store.h"
 
 #include "./ui/node.h"
+#include "./ui/render.h"
 
 App::App(std::unique_ptr<raylib::Window> a_window, int a_fps,
          const raylib::Color& a_text_color,
@@ -77,6 +78,10 @@ void App::start() {
 
             text_color.DrawText(ss.str(), 190, 220, 20);
         }
+
+        // render root node
+        render(root);
+
         EndDrawing();
     }
 }

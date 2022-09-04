@@ -1,5 +1,6 @@
 {
   "files.associations": {
+    "*.cui": "pug",
     "*.gd": "gdscript",
     "*.razor": "aspnetcorerazor",
     ".lintstagedrc": "json",

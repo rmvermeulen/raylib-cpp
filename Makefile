@@ -82,6 +82,8 @@ include: submodules packages
 	$(call COPY,vendor/raylib/src,./include,raylib.h)
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
+	echo -e "\nvendor: raylib ✔\n"
+	
 	# setup scope_guard
 	cp vendor/scope_guard/scope_guard.hpp ./include
 

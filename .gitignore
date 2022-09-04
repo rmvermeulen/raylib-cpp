@@ -5,3 +5,4 @@ bin
 .vscode/targets.log
 .vscode/dryrun.log
 .vscode/configurationCache.log
+vcpkg_installed/

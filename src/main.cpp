@@ -18,9 +18,8 @@
 #include "./core/object.h"
 #include "./functions.h"
 
-void run_game() {}
-
 int main() {
+
 #if RUN_TESTS
     println("main: running tests...");
     tests::run_all();

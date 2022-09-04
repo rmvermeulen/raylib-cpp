@@ -2,6 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "rayact",
   "version": "0.1.0",
-  "dependencies": ["cereal", "rxcpp"],
+  "dependencies": ["cereal", "rxcpp", "catch2"],
   "builtin-baseline": "927006b24c3a28dfd8aa0ec5f8ce43098480a7f1"
 }

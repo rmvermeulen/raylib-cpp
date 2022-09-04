@@ -14,6 +14,7 @@
 #include "./state/store.h"
 
 #include "./ui/node.h"
+#include "./ui/parse.h"
 #include "./ui/render.h"
 
 App::App(std::unique_ptr<raylib::Window> a_window, int a_fps,
@@ -40,6 +41,8 @@ App::~App() {}
 
 void App::start() {
     window->Init();
+
+    auto parsed_root = ui::parse("./cui/example.cui");
 
     Store<state::Model,
           std::function<state::Model(state::Model, state::Action)>,
@@ -80,7 +83,7 @@ void App::start() {
         }
 
         // render root node
-        render(root);
+        ui::render(root);
 
         EndDrawing();
     }

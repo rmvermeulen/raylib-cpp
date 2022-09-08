@@ -11,6 +11,8 @@
 #include <sstream>
 #include <string>
 
+#define LOG_VERBOSE 0
+
 namespace ui {
 
     typedef boost::char_separator<wchar_t> separator;
@@ -35,14 +37,46 @@ namespace ui {
         typedef std::variant<None, Error, String, Tag, Comment> Token;
     };
 
+    std::wstring to_string(const Parsing::Token& token) {
+        if (std::holds_alternative<Parsing::None>(token)) {
+            return L"None";
+        }
+        if (std::holds_alternative<Parsing::Error>(token)) {
+            std::wstringstream ws;
+            ws << "Error(" << std::get<Parsing::Error>(token).message << ") ";
+            return ws.str();
+        }
+        if (std::holds_alternative<Parsing::String>(token)) {
+            std::wstringstream ws;
+            ws << "String(" << std::get<Parsing::String>(token).content << ") ";
+            return ws.str();
+        }
+        if (std::holds_alternative<Parsing::Tag>(token)) {
+            std::wstringstream ws;
+            ws << "Tag(" << std::get<Parsing::Tag>(token).content << ") ";
+            return ws.str();
+        }
+        if (std::holds_alternative<Parsing::Comment>(token)) {
+            std::wstringstream ws;
+            ws << "Comment(" << std::get<Parsing::Comment>(token).content
+               << ") ";
+            return ws.str();
+        }
+        return {};
+    }
+
     std::wstring take_until_match(const std::wstring& until,
                                   tokenizer::iterator& token_iterator) {
+#if LOG_VERBOSE
         std::wcout << "take_until_match:'" << until << "'" << std::endl;
+#endif
         std::wstringstream ss;
         while (!token_iterator.at_end()) {
             const auto& token = *token_iterator;
+#if LOG_VERBOSE
             std::wcout << "take_until_match:token'" << token << "'"
                        << std::endl;
+#endif
             if (token == until)
                 break;
             ss << token;
@@ -51,8 +85,9 @@ namespace ui {
         auto s = ss.str();
 
         boost::algorithm::trim(s);
-
+#if LOG_VERBOSE
         std::wcout << "take_until_match:return'" << s << "'" << std::endl;
+#endif
         return s;
     }
     Parsing::Token match_token(Parsing::Token token_state,
@@ -81,8 +116,8 @@ namespace ui {
         return false;
     }
 
-    const std::vector<Parsing::Token>& consume_tokens(tokenizer& tokens,
-                                                      std::wostream& logger) {
+    std::vector<Parsing::Token> consume_tokens(tokenizer& tokens,
+                                               std::wostream& logger) {
         std::vector<Parsing::Token> parsed_tokens{};
 
         Parsing::Token token_state = Parsing::None{};
@@ -152,7 +187,7 @@ namespace ui {
             }
 #endif
         }
-        return parsed_tokens;
+        return std::move(parsed_tokens);
     }
 
     std::shared_ptr<Node> parse(const std::string& path) {
@@ -171,7 +206,12 @@ namespace ui {
         tokenizer tok{s, sep};
 
         const auto& tokens = consume_tokens(tok, std::wcout);
-        std::cout << "\ntokens parsed!\n" << std::endl;
+        std::cout << "\ntokens (" << tokens.size() << ") parsed!\n"
+                  << std::endl;
+
+        for (const auto& token : tokens) {
+            std::wcout << "token: " << to_string(token) << std::endl;
+        }
 
         return std::make_shared<Node>();
     }

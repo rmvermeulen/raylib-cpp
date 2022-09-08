@@ -65,6 +65,59 @@ namespace ui {
         return {};
     }
 
+    std::wstring take_until_match_any(const std::vector<std::wstring>& matchers,
+                                      tokenizer::iterator& token_iterator) {
+#if LOG_VERBOSE
+        std::wcout << "take_until_match:'" << matchers << "'" << std::endl;
+#endif
+        std::wstringstream ss;
+        while (!token_iterator.at_end()) {
+            const auto& token = *token_iterator;
+#if LOG_VERBOSE
+            std::wcout << "take_until_match:token'" << token << "'"
+                       << std::endl;
+#endif
+            if (std::find(matchers.begin(), matchers.end(), token) !=
+                matchers.end())
+                break;
+            ss << token;
+            ++token_iterator;
+        }
+
+        auto s = ss.str();
+        boost::algorithm::trim(s);
+#if LOG_VERBOSE
+        std::wcout << "take_until_match:return'" << s << "'" << std::endl;
+#endif
+        return s;
+    }
+
+    std::wstring take_alphanumerics(tokenizer::iterator& token_iterator) {
+#if LOG_VERBOSE
+        std::wcout << "take_alphanumerics:'" << matchers << "'" << std::endl;
+#endif
+        std::wstringstream ss;
+        while (!token_iterator.at_end()) {
+            const auto& token = *token_iterator;
+#if LOG_VERBOSE
+            std::wcout << "take_alphanumerics:token'" << token << "'"
+                       << std::endl;
+#endif
+            if (std::all_of(token.begin(), token.end(),
+                            [](const auto& c) { return isalnum(c); }))
+                break;
+            ss << token;
+            ++token_iterator;
+        }
+
+        auto s = ss.str();
+        boost::algorithm::trim(s);
+#if LOG_VERBOSE
+        std::wcout << "take_alphanumerics:return'" << s << "'" << std::endl;
+#endif
+        return s;
+    }
+
     std::wstring take_until_match(const std::wstring& until,
                                   tokenizer::iterator& token_iterator) {
 #if LOG_VERBOSE
@@ -83,7 +136,6 @@ namespace ui {
             ++token_iterator;
         }
         auto s = ss.str();
-
         boost::algorithm::trim(s);
 #if LOG_VERBOSE
         std::wcout << "take_until_match:return'" << s << "'" << std::endl;
@@ -101,6 +153,10 @@ namespace ui {
         if (std::holds_alternative<Parsing::None>(token_state) &&
             token == L"#") {
             return Parsing::Comment{};
+        }
+        if (std::holds_alternative<Parsing::None>(token_state) &&
+            token == L".") {
+            return Parsing::Tag{};
         }
 
         return token_state;
@@ -130,13 +186,13 @@ namespace ui {
             std::wcout << "token is read, iterator.next()" << std::endl;
             // for (const auto& token : tokens) {
             logger << "token: '" << token << "'" << std::endl;
-            token_state = match_token(token_state, token, logger);
+            if (std::holds_alternative<Parsing::None>(token_state))
+                token_state = match_token(token_state, token, logger);
 
 #ifndef USE_APPLY
             if (std::holds_alternative<Parsing::Error>(token_state)) {
                 auto error = std::get<Parsing::Error>(token_state);
                 logger << "\nERROR\n'" << error.message << "'\n" << std::endl;
-                // goto restart;
             } else if (std::holds_alternative<Parsing::String>(token_state)) {
                 std::wcout << "token is string" << std::endl;
                 auto string = std::get<Parsing::String>(token_state);
@@ -144,17 +200,24 @@ namespace ui {
                 parsed_tokens.push_back(string);
 
                 token_state = Parsing::None{};
-                // goto restart;
+            } else if (std::holds_alternative<Parsing::Tag>(token_state)) {
+                std::wcout << "token is tag" << std::endl;
+                auto tag = std::get<Parsing::Tag>(token_state);
+                // tag.content = take_until_match_any({L" ", L".", L"("}, iter);
+                tag.content = take_alphanumerics(iter);
+                std::wcout << "full tag '" << tag.content << "'" << std::endl;
+                parsed_tokens.push_back(tag);
+
+                token_state = Parsing::None{};
             } else if (std::holds_alternative<Parsing::Comment>(token_state)) {
                 std::wcout << "token is start-of-comment" << std::endl;
                 auto comment = std::get<Parsing::Comment>(token_state);
-                auto result = take_until_match(L"\n", iter);
-                std::wcout << "full comment '" << result << "'" << std::endl;
-                comment.content = result;
+                comment.content = take_until_match(L"\n", iter);
+                std::wcout << "full comment '" << comment.content << "'"
+                           << std::endl;
                 parsed_tokens.push_back(comment);
 
                 token_state = Parsing::None{};
-                // goto restart;
             } else {
                 std::wcout << "unmatched token '" << token << "'" << std::endl;
             }

@@ -2,15 +2,13 @@
 namespace state {
     template <typename S, typename A> using Reducer = std::function<S(S, A)>;
 
-    template <typename TState, typename TAction,
-              typename TReducer = Reducer<TState, TAction>>
-    class Store {
+    template <typename TState, typename TAction> class Store {
       private:
         TState state;
-        TReducer reducer;
+        Reducer<TState, TAction> reducer;
 
       public:
-        Store(TReducer r) : state(), reducer(r) {
+        Store(Reducer<TState, TAction> r) : state(), reducer(r) {
             std::cout << "Store created!" << std::endl;
         }
 

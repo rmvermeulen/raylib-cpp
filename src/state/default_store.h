@@ -6,5 +6,6 @@
 #include "./store.h"
 
 namespace state {
-    typedef Store<Model, typeof update, ActionType> DefaultStore;
+    using DefaultReducer = decltype(update);
+    typedef Store<Model, ActionType> DefaultStore;
 } // namespace state

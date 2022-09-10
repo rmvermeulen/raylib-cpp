@@ -42,9 +42,12 @@ ss_operator ss_sequence(const std::vector<ss_operator>& actions) {
 
 int main() {
 
-    state::DefaultStore store;
+    state::DefaultStore store{
+        [](auto s, auto a) { return state::update(s, a); }};
 
-    std::unique_ptr<IGame> game = std::make_unique<Schmup>();
+    store.dispatch(
+        state::actions::add_factory{[] { return std::make_shared<Schmup>(); }});
+    store.dispatch(state::actions::use_factory{0});
 
     raylib::Window window{};
 
@@ -61,6 +64,11 @@ int main() {
             ++label.second;
         std::remove_if(labels.begin(), labels.end(),
                        [](const auto& label) { return label.second > 200; });
+
+        // update active game
+        const auto state = store.get_state();
+        if (state.current_game.has_value())
+            state.current_game.value()->tick();
 
         BeginDrawing();
         ClearBackground(WHITE);
@@ -85,7 +93,9 @@ int main() {
                 continue;
             }
             DrawText(label.first.c_str(), 252, 100 - label.second, 24,
-                     {0, 0, 0, std::max(0, 255 - 5 * label.second)});
+                     {0, 0, 0,
+                      static_cast<unsigned char>(
+                          std::max(0, 255 - 5 * label.second))});
         }
 
         auto sft = build_string(
@@ -94,6 +104,12 @@ int main() {
 
         auto fps = build_string([](auto& ss) { ss << "FPS: " << GetFPS(); });
         DrawText(fps.c_str(), 100, 200, 24, BLACK);
+
+        auto json = build_string([&](auto& ss) {
+            cereal::JSONOutputArchive archive{ss};
+            archive(cereal::make_nvp("state", store.get_state()));
+        });
+        DrawText(json.c_str(), 100, 250, 24, BLACK);
 
         EndDrawing();
     }

@@ -6,8 +6,6 @@
 #include <immer/box.hpp>
 #include <immer/vector.hpp>
 
-#include <nameof.hpp>
-
 namespace state {
     using Factory = std::function<std::shared_ptr<IGame>(void)>;
     struct Model {
@@ -15,9 +13,15 @@ namespace state {
         std::optional<std::shared_ptr<IGame>> current_game;
 
         template <class Archive> void serialize(Archive& archive) {
-            using cereal::make_nvp;
-            archive(nameof("factories", factories.size()),
-                    nameof("current game", current_game.has_value()));
+
+            if (current_game.has_value()) {
+                const auto& game = *current_game.value();
+                archive(cereal::make_nvp("factories", factories.size()),
+                        cereal::make_nvp("current game", game));
+            } else {
+                archive(cereal::make_nvp("factories", factories.size()),
+                        cereal::make_nvp("current game", "-"));
+            }
         }
     };
 

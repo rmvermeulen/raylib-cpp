@@ -112,5 +112,7 @@ execute:
 # Clean up all relevant files
 clean:
 	$(RM) $(call platformpath, $(buildDir)/*)
+
+clean-all: clean
 	rm -rf include vcpkg_installed
 	git submodule foreach git clean -fxd

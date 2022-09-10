@@ -1,5 +1,4 @@
 #define RAYGUI_IMPLEMENTATION
-#define RUN_TESTS 0
 
 #include <algorithm>
 #include <chrono>
@@ -14,28 +13,65 @@
 #include <lager/util.hpp>
 #include <raylib/raylib-cpp.hpp>
 
-#include "./app.h"
-#include "./core/object.h"
-#include "./functions.h"
+#include "./utils/raylib-bool.h"
+#include "./utils/raylib-ostream.h"
+
+std::string build_string(std::function<void(std::stringstream&)> builder) {
+    std::stringstream ss;
+    builder(ss);
+    return ss.str();
+}
+
+template <typename T>
+std::function<void(std::stringstream&)> ss_append(const T& value) {
+    return [value](std::stringstream& ss) { ss << value; };
+}
 
 int main() {
 
-#if RUN_TESTS
-    println("main: running tests...");
-    tests::run_all();
-    println("main: tests done!");
-#else
-    println("main: starting app!");
+    raylib::Window window{};
 
-    auto title = "Raylib C++ Starter Kit Example";
-    if (false) {
-        auto window = std::make_unique<raylib::Window>(800, 450, title, false);
-        App app{std::move(window), 60};
-        app.start();
-    } else {
-        App app{800, 450, 60, title, WHITE, GRAY};
-        app.start();
+    window.SetTargetFPS(60);
+
+    std::vector<std::pair<std::string, int>> labels;
+
+    int countdown = 0;
+
+    while (!window.ShouldClose()) {
+
+        // update labels
+        for (auto& label : labels)
+            ++label.second;
+        std::remove_if(labels.begin(), labels.end(),
+                       [](const auto& label) { return label.second > 200; });
+
+        BeginDrawing();
+        ClearBackground(WHITE);
+
+        if (!countdown) {
+            auto md = GetMouseDelta();
+            if (is_empty(md)) {
+                countdown = 10;
+                auto smd = build_string(ss_append(md));
+                labels.emplace_back(std::pair<std::string, int>{smd, 0});
+            }
+        } else {
+            --countdown;
+        }
+
+        for (const auto& label : labels) {
+            DrawText(label.first.c_str(), 100, 100 - label.second, 24,
+                     {0, 0, 0, std::max(0, 255 - 5 * label.second)});
+        }
+
+        auto sft = build_string(ss_append(GetFrameTime()));
+        DrawText(sft.c_str(), 100, 150, 24, BLACK);
+
+        auto fps = build_string(ss_append(GetFPS()));
+        DrawText(fps.c_str(), 100, 200, 24, BLACK);
+
+        EndDrawing();
     }
-#endif
+
     return 0;
 }

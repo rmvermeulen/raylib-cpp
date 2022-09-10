@@ -16,16 +16,31 @@
 #include "./utils/raylib-bool.h"
 #include "./utils/raylib-ostream.h"
 
-std::string build_string(std::function<void(std::stringstream&)> builder) {
+typedef std::function<void(std::stringstream&)> ss_operator;
+
+std::string build_string(ss_operator builder) {
     std::stringstream ss;
     builder(ss);
     return ss.str();
 }
 
-template <typename T>
-std::function<void(std::stringstream&)> ss_append(const T& value) {
-    return [value](std::stringstream& ss) { ss << value; };
+template <typename T> ss_operator ss_append(const T& value) {
+    return [=](std::stringstream& ss) { ss << value; };
 }
+
+ss_operator ss_sequence(const std::vector<ss_operator>& actions) {
+    return [=](std::stringstream& ss) {
+        for (auto& action : actions) {
+            action(ss);
+        }
+    };
+}
+
+class IGame {
+    enum TickResult { Stop, Continue };
+    virtual ~IGame() {}
+    virtual TickResult tick() = 0;
+};
 
 int main() {
 
@@ -59,15 +74,23 @@ int main() {
             --countdown;
         }
 
+        auto first_label = std::string("MouseDelta: ") + labels[0].first;
+        DrawText(first_label.c_str(), 100, 100, 24, BLACK);
+        bool first = true;
         for (const auto& label : labels) {
-            DrawText(label.first.c_str(), 100, 100 - label.second, 24,
+            if (first) {
+                first = false;
+                continue;
+            }
+            DrawText(label.first.c_str(), 252, 100 - label.second, 24,
                      {0, 0, 0, std::max(0, 255 - 5 * label.second)});
         }
 
-        auto sft = build_string(ss_append(GetFrameTime()));
+        auto sft = build_string(
+            [](auto& ss) { ss << "FrameTime: " << GetFrameTime(); });
         DrawText(sft.c_str(), 100, 150, 24, BLACK);
 
-        auto fps = build_string(ss_append(GetFPS()));
+        auto fps = build_string([](auto& ss) { ss << "FPS: " << GetFPS(); });
         DrawText(fps.c_str(), 100, 200, 24, BLACK);
 
         EndDrawing();

@@ -1,15 +1,24 @@
 
 #pragma once
+#include <functional>
+#include <optional>
+
 #include <immer/box.hpp>
+#include <immer/vector.hpp>
+
+#include <nameof.hpp>
 
 namespace state {
+    using Factory = std::function<std::shared_ptr<IGame>(void)>;
     struct Model {
-        immer::box<int> frames{0};
-        immer::box<int> clicks{0};
+        immer::vector<Factory> factories;
+        std::optional<std::shared_ptr<IGame>> current_game;
+
         template <class Archive> void serialize(Archive& archive) {
             using cereal::make_nvp;
-            archive(make_nvp("frames", frames.get()),
-                    make_nvp("clicks", clicks.get()));
+            archive(nameof("factories", factories.size()),
+                    nameof("current game", current_game.has_value()));
         }
     };
+
 } // namespace state

@@ -1,11 +1,20 @@
 #pragma once
 #include <variant>
 
+#include "../game.h"
+#include "./model.h"
+
 namespace state {
     namespace actions {
-        struct count_frame {};
-        struct count_click {};
+        struct add_factory {
+            Factory factory;
+        };
+        struct use_factory {
+            int index;
+        };
+        struct close_game {};
     } // namespace actions
 
-    using Action = std::variant<actions::count_frame, actions::count_click>;
+    using ActionType = std::variant<actions::add_factory, actions::use_factory,
+                                    actions::close_game>;
 } // namespace state

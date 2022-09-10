@@ -1,23 +1,31 @@
 #pragma once
+
+#include <lager/util.hpp>
+
 #include "./actions.h"
 #include "./model.h"
-#include <lager/util.hpp>
 
 namespace state {
 
-    Model update(Model model, Action action) {
-        const auto new_model =
-            std::visit(lager::visitor{
-                           [&](actions::count_frame) {
-                               model.frames = model.frames.update(add(1));
+    Model update(Model model, ActionType action) {
+        const auto new_model = std::visit(
+            lager::visitor{[&](actions::add_factory action) {
+                               model.factories =
+                                   model.factories.push_back(action.factory);
                                return model;
                            },
-                           [&](actions::count_click) {
-                               model.clicks = model.clicks.update(add(1));
+                           [&](actions::use_factory action) {
+                               if (action.index >= model.factories.size())
+                                   return model;
+                               auto factory = model.factories[action.index];
+                               model.current_game = factory();
                                return model;
                            },
-                       },
-                       action);
+                           [&](actions::close_game) {
+                               model.current_game = {};
+                               return model;
+                           }},
+            action);
 
         // cereal::JSONOutputArchive archive(std::cout);
         // archive(CEREAL_NVP(new_model));

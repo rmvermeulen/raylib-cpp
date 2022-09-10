@@ -13,8 +13,12 @@
 #include <lager/util.hpp>
 #include <raylib/raylib-cpp.hpp>
 
+#include "./state/default_store.h"
 #include "./utils/raylib-bool.h"
 #include "./utils/raylib-ostream.h"
+
+#include "./game.h"
+#include "./games/schmup.h"
 
 typedef std::function<void(std::stringstream&)> ss_operator;
 
@@ -36,13 +40,11 @@ ss_operator ss_sequence(const std::vector<ss_operator>& actions) {
     };
 }
 
-class IGame {
-    enum TickResult { Stop, Continue };
-    virtual ~IGame() {}
-    virtual TickResult tick() = 0;
-};
-
 int main() {
+
+    state::DefaultStore store;
+
+    std::unique_ptr<IGame> game = std::make_unique<Schmup>();
 
     raylib::Window window{};
 

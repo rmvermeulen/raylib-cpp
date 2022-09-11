@@ -42,6 +42,7 @@ ss_operator ss_sequence(const std::vector<ss_operator>& actions) {
 }
 
 int main() {
+    const size_t text_size = 20;
 
     StoreBase<state::Model, state::ActionType> store{
         [](auto s, auto a) { return state::reducer(s, a); }};
@@ -72,45 +73,19 @@ int main() {
             state.current_game.value()->tick();
 
         BeginDrawing();
-        ClearBackground(WHITE);
+        ClearBackground(SKYBLUE);
 
-        if (!countdown) {
-            auto md = GetMouseDelta();
-            if (is_empty(md)) {
-                countdown = 10;
-                auto smd = build_string(ss_append(md));
-                labels.emplace_back(std::pair<std::string, int>{smd, 0});
-            }
-        } else {
-            --countdown;
-        }
-
-        auto first_label = std::string("MouseDelta: ") + labels[0].first;
-        DrawText(first_label.c_str(), 100, 100, 24, BLACK);
-        bool first = true;
-        for (const auto& label : labels) {
-            if (first) {
-                first = false;
-                continue;
-            }
-            DrawText(label.first.c_str(), 252, 100 - label.second, 24,
-                     {0, 0, 0,
-                      static_cast<unsigned char>(
-                          std::max(0, 255 - 5 * label.second))});
-        }
-
-        auto sft = build_string(
-            [](auto& ss) { ss << "FrameTime: " << GetFrameTime(); });
-        DrawText(sft.c_str(), 100, 150, 24, BLACK);
+        state.current_game.value()->render();
 
         auto fps = build_string([](auto& ss) { ss << "FPS: " << GetFPS(); });
-        DrawText(fps.c_str(), 100, 200, 24, BLACK);
-
+        DrawText(fps.c_str(), 0, 0, text_size, BLACK);
+#ifdef DUMP_STATE_JSON
         auto json = build_string([&](auto& ss) {
             cereal::JSONOutputArchive archive{ss};
             archive(cereal::make_nvp("state", store.get_state()));
         });
-        DrawText(json.c_str(), 100, 250, 24, BLACK);
+        DrawText(json.c_str(), 0, 20, text_size, BLACK);
+#endif
 
         EndDrawing();
     }

@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 template <typename S, typename A> using Reducer = std::function<S(S, A)>;
 

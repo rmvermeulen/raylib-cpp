@@ -15,7 +15,7 @@ target := $(buildDir)/$(executable)
 sources := $(call rwildcard,src/,*.cpp)
 objects := $(patsubst src/%, $(buildDir)/%, $(patsubst %.cpp, %.o, $(sources)))
 depends := $(patsubst %.o, %.d, $(objects))
-compileFlags := -std=c++20 -I include
+compileFlags := -std=c++20 -I include -I vcpkg_installed/x64-linux/include
 linkFlags = -L lib/$(platform) -l raylib
 
 # Check for Windows
@@ -68,17 +68,15 @@ setup: include lib
 submodules:
 	git submodule update --init --recursive
 
+packages:
+	vcpkg install
+
 # Copy the relevant header files into includes
-include: submodules
+include: submodules packages
 	$(MKDIR) $(call platformpth, ./include)
 	$(call COPY,vendor/raylib/src,./include,raylib.h)
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
-	$(call COPY,vendor/raygui/src,./include,raygui.h)
-	$(MKDIR) $(call platformpth, ./include/lager)
-	$(call COPY,vendor/lager/lager,./include/lager,*.hpp)
-	$(MKDIR) $(call platformpth, ./include/immer)
-	$(call COPY,vendor/immer/immer,./include/immer,*.hpp)
 	# setup scope_guard
 	$(call COPY,vendor/scope_guard,./include,scope_guard.hpp)
 

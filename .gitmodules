@@ -4,15 +4,6 @@
 [submodule "vendor/raylib"]
 	path = vendor/raylib
 	url = https://github.com/raysan5/raylib
-[submodule "vendor/raygui"]
-	path = vendor/raygui
-	url = https://github.com/raysan5/raygui.git
-[submodule "vendor/immer"]
-	path = vendor/immer
-	url = https://github.com/arximboldi/immer.git
-[submodule "vendor/lager"]
-	path = vendor/lager
-	url = https://github.com/arximboldi/lager.git
 [submodule "vendor/scope_guard"]
 	path = vendor/scope_guard
 	url = https://github.com/ricab/scope_guard.git

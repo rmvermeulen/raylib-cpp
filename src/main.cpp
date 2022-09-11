@@ -11,31 +11,40 @@
 
 #include <cereal/archives/json.hpp>
 #include <immer/box.hpp>
+#include <lager/event_loop/manual.hpp>
+#include <lager/store.hpp>
 #include <lager/util.hpp>
 #include <raylib/raylib-cpp.hpp>
 
-#include "./app.h"
 #include "./core/object.h"
 #include "./functions.h"
+#include "./state/actions.h"
+#include "./state/model.h"
+#include "./state/reducers.h"
 
 int main() {
 
-#if RUN_TESTS
-    println("main: running tests...");
-    tests::run_all();
-    println("main: tests done!");
-#else
-    println("main: starting app!");
-
-    auto title = "Raylib C++ Starter Kit Example";
-    if (false) {
-        auto window = std::make_unique<raylib::Window>(800, 450, title, false);
-        App app{std::move(window), 60};
-        app.start();
-    } else {
-        App app{800, 450, 60, title, WHITE, GRAY};
-        app.start();
+    auto initial_state = state::Model{};
+    {
+        cereal::JSONOutputArchive archive(std::cout);
+        archive(CEREAL_NVP(initial_state));
     }
-#endif
+
+    auto store = lager::make_store<state::Action>(
+        initial_state, lager::with_manual_event_loop());
+
+    store.watch([&](auto state) {
+        cereal::JSONOutputArchive archive(std::cout);
+        archive(cereal::make_nvp("new state", state));
+    });
+
+    store.dispatch(state::actions::count_frame{});
+    store.dispatch(state::actions::count_frame{});
+    store.dispatch(state::actions::count_frame{});
+    store.dispatch(state::actions::count_click{});
+
+    cereal::JSONOutputArchive archive(std::cout);
+    archive(cereal::make_nvp("final state", store.get()));
+
     return 0;
 }

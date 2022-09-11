@@ -77,7 +77,7 @@ packages:
 
 # Copy the relevant header files into includes
 include: submodules packages
-	$(MKDIR) $(call platformpth, ./include)
+	$(MKDIR) include
 	# setup raylib
 	$(call COPY,vendor/raylib/src,./include,raylib.h)
 	$(call COPY,vendor/raylib/src,./include,raymath.h)

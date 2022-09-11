@@ -10,6 +10,7 @@
     "immer",
     "boost-tokenizer",
     "boost-algorithm",
+    "boost-intrusive",
     "nameof"
   ],
   "builtin-baseline": "927006b24c3a28dfd8aa0ec5f8ce43098480a7f1"

@@ -13,12 +13,13 @@
 #include <lager/util.hpp>
 #include <raylib/raylib-cpp.hpp>
 
-#include "./state/default_store.h"
-#include "./utils/raylib-bool.h"
-#include "./utils/raylib-ostream.h"
-
 #include "./game.h"
 #include "./games/schmup.h"
+#include "./state/actions.h"
+#include "./state/model.h"
+#include "./state/reducer.h"
+#include "./utils/raylib-bool.h"
+#include "./utils/raylib-ostream.h"
 
 typedef std::function<void(std::stringstream&)> ss_operator;
 
@@ -42,12 +43,12 @@ ss_operator ss_sequence(const std::vector<ss_operator>& actions) {
 
 int main() {
 
-    state::DefaultStore store{
-        [](auto s, auto a) { return state::update(s, a); }};
+    StoreBase<state::Model, state::ActionType> store{
+        [](auto s, auto a) { return state::reducer(s, a); }};
 
-    store.dispatch(
-        state::actions::add_factory{[] { return std::make_shared<Schmup>(); }});
-    store.dispatch(state::actions::use_factory{0});
+    store.dispatch(state::actions::AddFactory{
+        [] { return std::make_shared<schmup::Schmup>(); }});
+    store.dispatch(state::actions::UseFactory{0});
 
     raylib::Window window{};
 

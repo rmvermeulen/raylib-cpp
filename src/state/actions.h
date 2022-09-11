@@ -6,15 +6,15 @@
 
 namespace state {
     namespace actions {
-        struct add_factory {
+        struct AddFactory {
             Factory factory;
         };
-        struct use_factory {
+        struct UseFactory {
             int index;
         };
-        struct close_game {};
+        struct CloseGame {};
     } // namespace actions
 
-    using ActionType = std::variant<actions::add_factory, actions::use_factory,
-                                    actions::close_game>;
+    using ActionType = std::variant<actions::AddFactory, actions::UseFactory,
+                                    actions::CloseGame>;
 } // namespace state

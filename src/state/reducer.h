@@ -7,21 +7,21 @@
 
 namespace state {
 
-    Model update(Model model, ActionType action) {
+    Model reducer(Model model, ActionType action) {
         const auto new_model = std::visit(
-            lager::visitor{[&](actions::add_factory action) {
+            lager::visitor{[&](actions::AddFactory action) {
                                model.factories =
                                    model.factories.push_back(action.factory);
                                return model;
                            },
-                           [&](actions::use_factory action) {
+                           [&](actions::UseFactory action) {
                                if (action.index >= model.factories.size())
                                    return model;
                                auto factory = model.factories[action.index];
                                model.current_game = factory();
                                return model;
                            },
-                           [&](actions::close_game) {
+                           [&](actions::CloseGame) {
                                model.current_game = {};
                                return model;
                            }},

@@ -96,7 +96,7 @@ int main() {
 
     auto previous_state = store.get();
 
-    window.SetTargetFPS(60);
+    // window.SetTargetFPS(60);
 
     // Main game loop
     while (!window.ShouldClose()) // Detect window close button or ESC key
@@ -106,11 +106,10 @@ int main() {
         store.dispatch(app::SetScreenSize{window.GetSize()});
 
         // Draw
-        BeginDrawing();
         if (store.get() != previous_state) {
-            previous_state = store.get();
+            window.BeginDrawing().ClearBackground(raylib::Color::SkyBlue());
 
-            raylib::Color::SkyBlue().ClearBackground();
+            previous_state = store.get();
 
             auto cursor_pos = store.get().mouse_position;
             raylib::DrawText(
@@ -119,8 +118,10 @@ int main() {
 
             ++frames_rendered;
             fmt::print("frame {} rendered\n", frames_rendered);
+            window.EndDrawing();
+            SwapScreenBuffer();
         }
-        EndDrawing();
+        PollInputEvents();
     }
     return 0;
 }

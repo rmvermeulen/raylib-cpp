@@ -109,25 +109,25 @@ int main() {
 
     auto home = getenv("HOME");
     auto layout_path = fmt::format("{}/.screenlayout", home);
+
     std::vector<std::filesystem::directory_entry> entries;
-    std::filesystem::directory_iterator dir{layout_path};
-    for (auto e : dir) {
-        entries.push_back(std::move(e));
+    for (auto entry : std::filesystem::directory_iterator{layout_path}) {
+        entries.push_back(std::move(entry));
     }
 
-    auto list = boolinq::from(entries)
-                    .where([](std::filesystem::directory_entry entry) {
-                        return entry.is_regular_file();
-                    })
-                    .select([](std::filesystem::directory_entry entry) {
-                        return entry.path().filename().string();
-                    })
-                    .where([](auto name) {
-                        return name.length() > 1 && name[0] != '.';
-                    })
-                    .toStdVector();
-    fmt::print("items: {}\n", list.size());
-    for (auto item : list) {
+    auto layouts = boolinq::from(entries)
+                       .where([](std::filesystem::directory_entry entry) {
+                           return entry.is_regular_file();
+                       })
+                       .select([](std::filesystem::directory_entry entry) {
+                           return entry.path().filename().string();
+                       })
+                       .where([](auto name) {
+                           return name.length() > 1 && name[0] != '.';
+                       })
+                       .toStdVector();
+    fmt::print("layout: {}\n", layouts.size());
+    for (auto item : layouts) {
         fmt::print("item = {};\n", item);
     }
 
@@ -157,6 +157,14 @@ int main() {
             raylib::Rectangle mouse_rect(cursor_pos - IVector2(20, 20),
                                          {40, 40});
             mouse_rect.DrawLines(raylib::Color::White());
+
+            int i = 0;
+            for (auto layout : layouts) {
+
+                raylib::DrawText(layout, 20, 50 + i * 20, 20,
+                                 raylib::Color::Black());
+                ++i;
+            }
 
             window.EndDrawing();
             SwapScreenBuffer();

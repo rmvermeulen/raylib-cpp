@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <fmt/format.h>
 #include <functional>
 #include <iomanip>
@@ -7,6 +8,7 @@
 #include <sstream>
 #include <type_traits>
 
+#include <boolinq/boolinq.h>
 #include <cereal/archives/json.hpp>
 #include <immer/box.hpp>
 #include <immer/map.hpp>
@@ -104,6 +106,30 @@ int main() {
     auto previous_state = store.get();
 
     // window.SetTargetFPS(60);
+
+    auto home = getenv("HOME");
+    auto layout_path = fmt::format("{}/.screenlayout", home);
+    std::vector<std::filesystem::directory_entry> entries;
+    std::filesystem::directory_iterator dir{layout_path};
+    for (auto e : dir) {
+        entries.push_back(std::move(e));
+    }
+
+    auto list = boolinq::from(entries)
+                    .where([](std::filesystem::directory_entry entry) {
+                        return entry.is_regular_file();
+                    })
+                    .select([](std::filesystem::directory_entry entry) {
+                        return entry.path().filename().string();
+                    })
+                    .where([](auto name) {
+                        return name.length() > 1 && name[0] != '.';
+                    })
+                    .toStdVector();
+    fmt::print("items: {}\n", list.size());
+    for (auto item : list) {
+        fmt::print("item = {};\n", item);
+    }
 
     // Main game loop
     while (!window.ShouldClose()) // Detect window close button or ESC key

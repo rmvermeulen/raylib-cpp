@@ -28,8 +28,15 @@ struct IVector2 {
     bool operator==(const IVector2& other) const {
         return x == other.x && y == other.y;
     }
-    IVector2 diff(const IVector2& other) const {
+    IVector2 diff(const IVector2& other) const { return *this - other; }
+    IVector2 operator-(const IVector2& other) const {
         return IVector2(x - other.x, y - other.y);
+    }
+    operator Vector2() const {
+        return Vector2(static_cast<float>(x), static_cast<float>(y));
+    }
+    Vector2 operator+(const IVector2& other) const {
+        return IVector2(x + other.x, y + other.y);
     }
 };
 
@@ -107,19 +114,29 @@ int main() {
 
         // Draw
         if (store.get() != previous_state) {
-            window.BeginDrawing().ClearBackground(raylib::Color::SkyBlue());
-
             previous_state = store.get();
+
+            window.BeginDrawing().ClearBackground(raylib::Color::SkyBlue());
 
             auto cursor_pos = store.get().mouse_position;
             raylib::DrawText(
                 fmt::format("Mouse x={} y={}", cursor_pos.x, cursor_pos.y), 20,
                 20, 20, raylib::Color::Black());
 
-            ++frames_rendered;
-            fmt::print("frame {} rendered\n", frames_rendered);
+            auto screen_size = store.get().screen_size;
+            raylib::Rectangle outline_rect(
+                Vector2(10, 10), Vector2(screen_size - IVector2(20, 20)));
+            outline_rect.DrawLines(raylib::Color::Yellow());
+
+            raylib::Rectangle mouse_rect(cursor_pos - IVector2(20, 20),
+                                         {40, 40});
+            mouse_rect.DrawLines(raylib::Color::White());
+
             window.EndDrawing();
             SwapScreenBuffer();
+
+            ++frames_rendered;
+            fmt::print("frame {} rendered\n", frames_rendered);
         }
         PollInputEvents();
     }

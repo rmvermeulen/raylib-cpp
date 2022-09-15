@@ -16,7 +16,7 @@ sources := $(call rwildcard,src/,*.cpp)
 objects := $(patsubst src/%, $(buildDir)/%, $(patsubst %.cpp, %.o, $(sources)))
 depends := $(patsubst %.o, %.d, $(objects))
 compileFlags := -std=c++20 -I include -I vcpkg_installed/x64-linux/include
-linkFlags = -L lib/$(platform) -l raylib
+linkFlags = -L lib/$(platform) -l raylib -l fmt
 
 # Check for Windows
 ifeq ($(OS), Windows_NT)

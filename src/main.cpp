@@ -1,8 +1,6 @@
-#define RAYGUI_IMPLEMENTATION
-#define RUN_TESTS 0
-
 #include <algorithm>
 #include <chrono>
+#include <fmt/format.h>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -11,76 +9,78 @@
 
 #include <cereal/archives/json.hpp>
 #include <immer/box.hpp>
+#include <immer/map.hpp>
+#include <lager/event_loop/manual.hpp>
+#include <lager/store.hpp>
 #include <lager/util.hpp>
 #include <raygui.h>
 #include <raylib-cpp.hpp>
 
-#include "./core/object.h"
-#include "./functions.h"
-#include "./store.h"
-
-bool EditableLabel(float x, bool is_confirmed, char* buf) {
-    Rectangle rect{x + 210, 200, 100, 100};
-    if (is_confirmed) {
-        GuiLabel(rect, buf);
-    } else {
-        if (GuiTextBox(rect, buf, 28, true)) {
-            println("confirmed: %s", buf);
-            return true;
-        }
+struct IVector2 {
+    signed int x, y;
+    IVector2(signed int x = 0, signed int y = 0) : x(x), y(y) {}
+    IVector2(const Vector2& other) : x(other.x), y(other.y) {}
+    IVector2& operator=(const Vector2& other) {
+        x = static_cast<signed int>(other.x);
+        y = static_cast<signed int>(other.y);
+        return *this;
     }
-    return is_confirmed;
-}
-
-namespace State {
-
-    int add(int a, int b) { return a + b; }
-    std::function<int(int)> add(int a) {
-        return [=](int b) { return add(a, b); };
+    bool operator==(const IVector2& other) const {
+        return x == other.x && y == other.y;
     }
-
-    struct Model {
-        immer::box<int> frames{0};
-        immer::box<int> clicks{0};
-        template <class Archive> void serialize(Archive& archive) {
-            archive(CEREAL_NVP(frames.get()), CEREAL_NVP(clicks.get()));
-        }
-    };
-    namespace actions {
-        struct count_frame {};
-        struct count_click {};
-    } // namespace actions
-
-    using Action = std::variant<actions::count_frame, actions::count_click>;
-
-    Model update(Model model, Action action) {
-        const auto new_model =
-            std::visit(lager::visitor{
-                           [&](actions::count_frame) {
-                               model.frames = model.frames.update(add(1));
-                               return model;
-                           },
-                           [&](actions::count_click) {
-                               model.clicks = model.clicks.update(add(1));
-                               return model;
-                           },
-                       },
-                       action);
-
-        // cereal::JSONOutputArchive archive(std::cout);
-        // archive(CEREAL_NVP(new_model));
-        return new_model;
-    }
-} // namespace State
-
-class Reducer {
-  public:
-    State::Model reduce(State::Model m, State::Action a) {
-        return State::update(m, a);
+    IVector2 diff(const IVector2& other) const {
+        return IVector2(x - other.x, y - other.y);
     }
 };
 
-void run_game() {
+namespace app {
+    struct SetMousePosition {
+        IVector2 position;
+    };
+    struct SetScreenSize {
+        IVector2 size;
+    };
+    typedef std::variant<SetMousePosition, SetScreenSize> Action;
+
+    struct Model {
+        IVector2 mouse_position;
+        IVector2 screen_size;
+        bool operator==(const Model& other) const {
+            auto eq = mouse_position == other.mouse_position &&
+                      screen_size == other.screen_size;
+            auto d1 = mouse_position.diff(other.mouse_position);
+            auto d2 = screen_size.diff(other.screen_size);
+            // fmt::print("comparing states... eq={} ({}, {}) & ({}, {})\n", eq,
+            //            d1.x, d1.y, d2.x, d2.y);
+
+            return eq;
+        }
+    };
+
+    Model update(Model model, Action action) {
+        return std::visit(
+            lager::visitor{
+                [&](SetMousePosition& action) {
+                    if (model.mouse_position == action.position)
+                        return model;
+                    auto diff = model.mouse_position.diff(action.position);
+                    fmt::print("SetMousePos diff({}, {})\n", diff.x, diff.y);
+                    model.mouse_position = action.position;
+                    return model;
+                },
+                [&](SetScreenSize& action) {
+                    if (model.screen_size == action.size)
+                        return model;
+                    model.screen_size = action.size;
+                    return model;
+                },
+            },
+            action);
+    }
+
+}; // namespace app
+
+int main() {
     // Initialization
     int screenWidth = 800;
     int screenHeight = 450;
@@ -89,67 +89,40 @@ void run_game() {
     raylib::Window window(screenWidth, screenHeight,
                           "Raylib C++ Starter Kit Example", false);
 
-    SetTargetFPS(60);
+    size_t frames_rendered = 0;
 
-    Store<State::Model,
-          std::function<State::Model(State::Model, State::Action)>,
-          State::Action>
-        store{&State::update};
+    auto store = lager::make_store<app::Action>(
+        app::Model{}, lager::with_manual_event_loop{});
 
-    char buffer1[1024];
-    memset(buffer1, 0, 1024);
-    bool confirm1 = false;
+    auto previous_state = store.get();
 
-    char buffer2[1024];
-    memset(buffer2, 0, 1024);
-    bool confirm2 = false;
+    window.SetTargetFPS(60);
 
     // Main game loop
     while (!window.ShouldClose()) // Detect window close button or ESC key
     {
-        cereal::JSONOutputArchive json_out(std::cout);
-        // Update
-        store.dispatch(State::actions::count_frame{});
-        // TODO: Update your variables here
-        // std::cout << '\n';
-        // json_out(CEREAL_NVP(store.get_state().counter));
+        // update state
+        store.dispatch(app::SetMousePosition{raylib::Mouse::GetPosition()});
+        store.dispatch(app::SetScreenSize{window.GetSize()});
 
         // Draw
         BeginDrawing();
-        ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-        textColor.DrawText("Congrats! You created your first window!", 190, 200,
-                           20);
-        {
-            std::stringstream ss;
-            ss << "And this is my own addition: ";
-            cereal::JSONOutputArchive dump(ss);
-            auto state = store.get_state();
-            dump(CEREAL_NVP(state));
-            // s += std::to_string(store.get_state().counter);
-            textColor.DrawText(ss.str(), 190, 220, 20);
+        if (store.get() == previous_state) {
+            std::this_thread::yield();
+        } else {
+            previous_state = store.get();
+
+            raylib::Color::SkyBlue().ClearBackground();
+
+            auto cursor_pos = store.get().mouse_position;
+            raylib::DrawText(
+                fmt::format("Mouse x={} y={}", cursor_pos.x, cursor_pos.y), 20,
+                20, 20, raylib::Color::Black());
+
+            ++frames_rendered;
+            fmt::print("frame {} rendered\n", frames_rendered);
         }
-
-        confirm1 = EditableLabel(0, confirm1, buffer1);
-        confirm2 = EditableLabel(200, confirm2, buffer2);
-
-        if (GuiButton(Rectangle{10, 10, 100, 100},
-                      "#05#Open Image")) { /* ACTION */
-            println("click!");
-            store.dispatch(State::actions::count_click{});
-        }
-
         EndDrawing();
     }
-}
-
-int main() {
-#if RUN_TESTS
-    println("main: running tests...");
-    tests::run_all();
-    println("main: tests done!");
-#else
-    println("main: starting game!");
-    run_game();
-#endif
     return 0;
 }

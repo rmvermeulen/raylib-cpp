@@ -107,9 +107,7 @@ int main() {
 
         // Draw
         BeginDrawing();
-        if (store.get() == previous_state) {
-            std::this_thread::yield();
-        } else {
+        if (store.get() != previous_state) {
             previous_state = store.get();
 
             raylib::Color::SkyBlue().ClearBackground();

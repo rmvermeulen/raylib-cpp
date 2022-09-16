@@ -6,15 +6,20 @@
 
 namespace app {
     namespace actions {
+        struct Initialize {};
         struct SetMousePosition {
             data::IVector2 position;
         };
         struct SetScreenSize {
             data::IVector2 size;
         };
+        struct SetLayouts {
+            immer::box<immer::vector<std::string>> layouts;
+        };
+        typedef std::variant<Initialize, SetMousePosition, SetScreenSize,
+                             SetLayouts>
+            Action;
     } // namespace actions
 
-    typedef std::variant<actions::SetMousePosition, actions::SetScreenSize>
-        Action;
-
+    using actions::Action;
 } // namespace app

@@ -24,6 +24,41 @@
 #include "app/app.hpp"
 #include "data/ivector.h"
 
+namespace layout {
+    template <typename T>
+    using render_fn =
+        std::function<void(const data::IVector2& position, const T& item)>;
+
+    using step_fn = std::function<data::IVector2(data::IVector2)>;
+
+    template <typename T>
+    void custom(const immer::vector<T>& items, data::IVector2 position,
+                step_fn next, render_fn<T> display) {
+        for (const auto& item : items) {
+            display(position, item);
+            position = next(position);
+        }
+    }
+
+    template <typename T>
+    void stepped(const immer::vector<T>& items, data::IVector2 position,
+                 const data::IVector2& step, render_fn<T> display) {
+        for (const auto& item : items) {
+            display(position, item);
+            position = position + step;
+        }
+    }
+    template <typename T>
+    void column(const immer::vector<T>& items, const data::IVector2& position,
+                uint step, render_fn<T> display) {
+        stepped(items, position, {0, step}, display);
+    }
+    template <typename T>
+    void row(const immer::vector<T>& items, const data::IVector2& position,
+             uint step, render_fn<T> display) {
+        stepped(items, position, {step, 0}, display);
+    }
+} // namespace layout
 int main() {
     // Initialization
     int screenWidth = 800;
@@ -66,13 +101,15 @@ int main() {
                                          {40, 40});
             mouse_rect.DrawLines(raylib::Color::White());
 
-            int i = 0;
-            for (const auto& layout : store.get().layouts) {
+            auto draw_string = [](const auto& pos, const auto& str) -> void {
+                raylib::DrawText(str, pos.x, pos.y, 20, raylib::Color::Black());
+            };
 
-                raylib::DrawText(layout, 200, 50 + i * 20, 20,
-                                 raylib::Color::Black());
-                ++i;
-            }
+            layout::column<std::string>(store.get().layouts, {200, 150}, 20,
+                                        draw_string);
+
+            layout::stepped<std::string>(store.get().layouts, {200, 50},
+                                         {50, 20}, draw_string);
 
             if (GuiButton(Rectangle{10, 10, 100, 100}, "some button!")) {
                 fmt::print("pressed!");
